@@ -6,6 +6,9 @@ set(MAJOR_VERSION   0)
 set(MINOR_VERSION   0)
 set(PATCH_VERSION   1)
 
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 ############################################
 
 set(FULL_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
@@ -81,12 +84,8 @@ else()
     add_definitions( ${QT_DEFINITIONS} )
 endif()
 
-# Boost
-set(Boost_USE_STATIC_LIBS ON)
-find_package(Boost 1.65.0 REQUIRED COMPONENTS python${PYTHON_VERSION})
-if(Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-endif()
+# pybind11
+find_package(pybind11 REQUIRED)
 
 # Eigen
 find_package( Eigen3 REQUIRED )
@@ -167,25 +166,20 @@ endif(Qt5_FOUND)
 #    HEADER_FILE_ONLY TRUE )
 
 ############################################
-# Setup target
-############################################
-
-add_definitions( -DBOOST_PYTHON_NO_LIB )
-
-############################################
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 ############################################
 
 foreach( MODULE ${MODULES} )
-    add_library(
-        ${MODULE} SHARED
-        src/py/${MODULE}.cpp
-        ${PRIVATE_HEADERS}
-        ${PRIVATE_HEADERS_MOC}
-        ${FORMS_HEADERS}
-        ${RESOURCES_RCC}
-        ${DOC_SRC}
-    )
+    pybind11_add_module(${MODULE} src/py/${MODULE}.cpp)
+#    add_library(
+#        ${MODULE} SHARED
+#        src/py/${MODULE}.cpp
+#        ${PRIVATE_HEADERS}
+#        ${PRIVATE_HEADERS_MOC}
+#        ${FORMS_HEADERS}
+#        ${RESOURCES_RCC}
+#        ${DOC_SRC}
+#    )
 
     SET_TARGET_PROPERTIES(${MODULE} PROPERTIES PREFIX "")
 endforeach( MODULE )
@@ -201,11 +195,11 @@ include( "misc/compiler_specific.cmake" )
 foreach( MODULE ${MODULES} )
     target_link_libraries(
         ${MODULE}
+        PRIVATE
         ${OPENGL_LIBRARIES}
         ${CARNA_LIBRARIES}
         ${CARNAQT_LIBRARIES}
         ${QT_LIBRARIES}
-		${Boost_LIBRARIES}
     )
 endforeach( MODULE )
 
