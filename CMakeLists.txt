@@ -62,6 +62,10 @@ file(TO_CMAKE_PATH ${INSTALL_LIBRARY_DIR} INSTALL_LIBRARY_DIR)
 # Find required dependencies
 ############################################
 
+# EGL
+find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
+include_directories(${OPENGL_EGL_INCLUDE_DIRS})
+
 # Qt
 find_package( Qt5Core QUIET )
 find_package( Qt5Widgets QUIET )
@@ -116,6 +120,8 @@ include_directories(${CMAKE_PROJECT_DIR}include)
 include_directories(${CMAKE_PROJECT_DIR}src/include)
 set( MODULES
         base
+        egl
+        presets
     )
 set( PRIVATE_QOBJECT_HEADERS
         ""
@@ -169,8 +175,9 @@ endif(Qt5_FOUND)
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 ############################################
 
+set(EXTRA_SOURCES_egl src/egl/Context.cpp)
 foreach( MODULE ${MODULES} )
-    pybind11_add_module(${MODULE} src/py/${MODULE}.cpp)
+    pybind11_add_module(${MODULE} src/py/${MODULE}.cpp ${EXTRA_SOURCES_${MODULE}})
 #    add_library(
 #        ${MODULE} SHARED
 #        src/py/${MODULE}.cpp
@@ -200,6 +207,7 @@ foreach( MODULE ${MODULES} )
         ${CARNA_LIBRARIES}
         ${CARNAQT_LIBRARIES}
         ${QT_LIBRARIES}
+        OpenGL::EGL
     )
 endforeach( MODULE )
 
