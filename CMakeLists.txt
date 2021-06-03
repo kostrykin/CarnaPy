@@ -122,6 +122,7 @@ set( MODULES
         base
         egl
         presets
+        helpers
     )
 set( PRIVATE_QOBJECT_HEADERS
         ""

@@ -17,16 +17,12 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/MeshFactory.h>
 #include <Carna/base/ManagedMesh.h>
 #include <Carna/base/RenderStage.h>
+#include <Carna/base/BlendFunction.h>
+#include <Carna/py/py.h>
 #include "Surface.cpp"
 
 using namespace Carna::base;
 using namespace Carna::py;
-
-template< typename T >
-void _py_free( T* ptr )
-{
-    delete ptr;
-}
 
 py::array_t< unsigned char > Surface__end( const Surface& surface )
 {
@@ -46,11 +42,7 @@ py::array_t< unsigned char > Surface__end( const Surface& surface )
 PYBIND11_MODULE(base, m)
 {
 
-    m.def( "free", &_py_free< Spatial > );
-    m.def( "free", &_py_free< GLContext > );
-    m.def( "free", &_py_free< Surface > );
-    m.def( "free", &_py_free< FrameRenderer > );
-    m.def( "free", &_py_free< RenderStage > );
+    py::class_< Carna::base::GLContext >( m, "GLContext" );
 
     py::class_< Spatial >( m, "Spatial" )
         .def_property_readonly( "has_parent", &Spatial::hasParent )
@@ -59,7 +51,8 @@ PYBIND11_MODULE(base, m)
         .def( "find_root", py::overload_cast<>( &Spatial::findRoot, py::const_ ), py::return_value_policy::reference )
         .def_property( "movable", &Spatial::isMovable, &Spatial::setMovable )
         .def_property( "tag", &Spatial::tag, &Spatial::setTag )
-        .def_readwrite( "local_transform", &Spatial::localTransform );
+        .def_readwrite( "local_transform", &Spatial::localTransform )
+        .DEF_FREE( Spatial );
 
     py::class_< Node, Spatial >( m, "Node" )
         .def_static( "create", []( const std::string& tag ) {
@@ -132,11 +125,13 @@ PYBIND11_MODULE(base, m)
         }
         , py::return_value_policy::reference )
         .def( "begin", &Surface::begin )
-        .def( "end", &Surface__end );
+        .def( "end", &Surface__end )
+        .DEF_FREE( Surface );
 
     py::class_< RenderStage >( m, "RenderStage" )
         .def_property( "enabled", &RenderStage::isEnabled, &RenderStage::setEnabled )
-        .def_property_readonly( "renderer", py::overload_cast<>( &RenderStage::renderer, py::const_ ) );
+        .def_property_readonly( "renderer", py::overload_cast<>( &RenderStage::renderer, py::const_ ) )
+        .DEF_FREE( RenderStage );
 
     py::class_< RenderStageSequence >( m, "RenderStageSequence" )
         .def_property_readonly( "stages", &RenderStageSequence::stages )
@@ -162,7 +157,13 @@ PYBIND11_MODULE(base, m)
         .def( "render", []( FrameRenderer* self, Camera& cam, Node* root ){
             if( root == nullptr ) self->render( cam );
             else self->render( cam, *root );
-        }, "cam"_a, "root"_a = nullptr );
+        }, "cam"_a, "root"_a = nullptr )
+        .DEF_FREE( FrameRenderer );
+
+    py::class_< BlendFunction >( m, "BlendFunction" )
+        .def( py::init< int, int >() )
+        .def_readonly( "source_factor", &BlendFunction::sourceFactor )
+        .def_readonly( "destination_factor", &BlendFunction::destinationFactor );
 
     m.def( "create_box", []( float width, float height, float depth )
     {
@@ -180,9 +181,9 @@ PYBIND11_MODULE(base, m)
     math.def( "ortho4f", &math::ortho4f );
     math.def( "frustum4f", py::overload_cast< float, float, float, float >( &math::frustum4f ) );
     math.def( "deg2rad", &math::deg2rad );
-    math.def( "rotation4f", static_cast< math::Matrix4f( * )( float, float, float, float ) >( &math::rotation4f ) );
+    math.def( "rotation4f", static_cast< math::Matrix4f( * )( const math::Vector3f&, float ) >( &math::rotation4f ) );
     math.def( "translation4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::translation4f ) );
-    math.def( "scaling4f", static_cast< math::Matrix4f( * )( float ) >( &math::scaling4f ) );
+    math.def( "scaling4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::scaling4f ) );
     math.def( "plane4f", py::overload_cast< const math::Vector3f&, float >( &math::plane4f ) );
     math.def( "plane4f_by_support", py::overload_cast< const math::Vector3f&, const math::Vector3f& >( &math::plane4f ) );
 
