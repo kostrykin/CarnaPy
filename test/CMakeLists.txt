@@ -7,6 +7,7 @@ cmake_minimum_required(VERSION 2.8.7)
 set(TEST_FILES
     test_base
     test_presets
+    test_helpers
 )
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/test_tools.py
@@ -18,7 +19,7 @@ foreach( TEST_FILE ${TEST_FILES} )
 
     add_custom_target(
         ${TEST_FILE}
-        COMMAND python3 -c "import ${TEST_FILE}"
+        COMMAND python3 -Xfaulthandler -c "import ${TEST_FILE}"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.."
         DEPENDS ${MODULES}
         COMMENT "Running ${TEST_FILE}..."

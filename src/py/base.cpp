@@ -37,6 +37,24 @@ py::array_t< unsigned char > Surface__end( const Surface& surface )
     return py::array( buf );
 }
 
+template< typename VectorElementType , int dimension >
+Eigen::Matrix< float, dimension, 1 > normalized( const Eigen::Matrix< VectorElementType, dimension, 1 >& vector )
+{
+    const float length = std::sqrt( static_cast< float >( math::length2( vector ) ) );
+    if( length > 0 ) return vector / length;
+    else return vector;
+}
+
+math::Matrix4f math__plane4f_by_distance( const math::Vector3f& normal, float distance )
+{
+    return math::plane4f( normalized( normal ), distance );
+}
+
+math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const math::Vector3f& support )
+{
+    return math::plane4f( normalized( normal ), support );
+}
+
 // see: https://pybind11.readthedocs.io/en/stable/advanced/misc.html#generating-documentation-using-sphinx
 
 PYBIND11_MODULE(base, m)
@@ -184,8 +202,8 @@ PYBIND11_MODULE(base, m)
     math.def( "rotation4f", static_cast< math::Matrix4f( * )( const math::Vector3f&, float ) >( &math::rotation4f ) );
     math.def( "translation4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::translation4f ) );
     math.def( "scaling4f", static_cast< math::Matrix4f( * )( float, float, float ) >( &math::scaling4f ) );
-    math.def( "plane4f", py::overload_cast< const math::Vector3f&, float >( &math::plane4f ) );
-    math.def( "plane4f_by_support", py::overload_cast< const math::Vector3f&, const math::Vector3f& >( &math::plane4f ) );
+    math.def( "plane4f", math__plane4f_by_distance );
+    math.def( "plane4f", math__plane4f_by_support );
 
 }
 

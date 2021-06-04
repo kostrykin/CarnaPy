@@ -32,7 +32,18 @@ void free( T* ptr )
 
 inline short float2huv( float value )
 {
-    return static_cast< short >( value * (1 << 12) + 0.5 ) - 1024;
+    return static_cast< short >( value * ((1 << 12) - 1) + 0.5 ) - 1024;
+}
+
+
+
+// ----------------------------------------------------------------------------------
+// huv2float
+// ----------------------------------------------------------------------------------
+
+inline float huv2float( short value )
+{
+    return (value + 1024) / float((1 << 12) - 1);
 }
 
 

@@ -4,7 +4,6 @@ import presets
 import egl
 import helpers
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.ndimage as ndi
 
 import faulthandler
@@ -92,6 +91,43 @@ surface.begin()
 renderer.render(cam)
 result = surface.end()
 test_tools.assert_rendering('presets.MIPStage', result)
+
+# ============================
+# presets.CuttingPlanesStage
+# ============================
+
+GEOMETRY_TYPE_PLANE = 2
+
+cps = presets.CuttingPlanesStage.create(GEOMETRY_TYPE_VOLUME, GEOMETRY_TYPE_PLANE)
+renderer.clear_stages()
+renderer.append_stage(cps);
+
+plane = base.Geometry.create(GEOMETRY_TYPE_PLANE)
+plane.local_transform = base.math.plane4f([1, 1, 1], 0)
+root.attach_child(plane);
+
+surface.begin()
+renderer.render(cam)
+result = surface.end()
+test_tools.assert_rendering('presets.CuttingPlanesStage', result)
+
+# ============================
+# presets.DVRStage
+# ============================
+
+dvr = presets.DVRStage.create(GEOMETRY_TYPE_VOLUME)
+dvr.write_color_map(0.2, 1, [1.0, 0.0, 0.0, 0.9], [1.0, 1.0, 0.0, 1.0])
+renderer.clear_stages()
+renderer.append_stage(dvr)
+
+surface.begin()
+renderer.render(cam)
+result = surface.end()
+test_tools.assert_rendering('presets.DVRStage', result)
+
+# ============================
+# Clean up
+# ============================
 
 grid_helper.free()
 root.free()

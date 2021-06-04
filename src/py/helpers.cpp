@@ -8,12 +8,27 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/base/Color.h>
 #include <Carna/base/Geometry.h>
 #include <Carna/base/BufferedHUVolume.h>
+#include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/PointMarkerHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
 #include <Carna/py/py.h>
 
 using namespace Carna::base;
 using namespace Carna::helpers;
+
+#include <iostream>
+void FrameRendererHelper__commit( FrameRendererHelper< >* self, bool clear )
+{
+    try
+    {
+        self->commit( clear );
+    }
+    catch( const CarnaException& ex )
+    {
+        std::cout << ex.message << std::endl;
+        std::cout << ex.details << std::endl;
+    }
+}
 
 PYBIND11_MODULE(helpers, m)
 {
@@ -74,6 +89,13 @@ PYBIND11_MODULE(helpers, m)
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelper< HUVolumeUInt16 >::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "release_geometry_features", &VolumeGridHelper< HUVolumeUInt16 >::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelper< HUVolumeUInt16 > );
+
+    py::class_< FrameRendererHelper< > >( m, "FrameRendererHelper" )
+        .def( py::init< RenderStageSequence& >() )
+        .def( "add_stage", &FrameRendererHelper< >::operator<< )
+        .def( "reset", &FrameRendererHelper< >::reset )
+        //.def( "commit", &FrameRendererHelper< >::commit, "clear"_a = true );
+        .def( "commit", &FrameRendererHelper__commit, "clear"_a = true );
 
 }
 

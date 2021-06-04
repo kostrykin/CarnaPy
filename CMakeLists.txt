@@ -48,9 +48,6 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/misc/CMake-Modules)
 option_default_to(INSTALL_LIBRARY_DIR "${TARGET_NAME}/carna"      String "Installation directory for libraries")
 option_default_to(INSTALL_DOC_DIR     "share/doc/${PROJECT_NAME}" String "Installation directory for API documentation")
 
-# set default destination for CMake modules
-#option_default_to(INSTALL_CMAKE_DIR "${CMAKE_ROOT}/Modules" String "Installation directory for CMake files")
-
 ############################################
 # Normalize installation paths
 # (get rid of Windows-style delimiters)
@@ -66,28 +63,6 @@ file(TO_CMAKE_PATH ${INSTALL_LIBRARY_DIR} INSTALL_LIBRARY_DIR)
 find_package(OpenGL REQUIRED COMPONENTS OpenGL EGL)
 include_directories(${OPENGL_EGL_INCLUDE_DIRS})
 
-# Qt
-find_package( Qt5Core QUIET )
-find_package( Qt5Widgets QUIET )
-find_package( Qt5Gui QUIET )
-find_package( Qt5OpenGL QUIET )
-find_package( Qt5Xml QUIET )
-if(Qt5Core_FOUND AND Qt5Widgets_FOUND AND Qt5Gui_FOUND AND Qt5OpenGL_FOUND AND Qt5Xml_FOUND)
-    set(Qt5_FOUND TRUE)
-    set(QT_LIBRARIES Qt5::Core Qt5::Widgets Qt5::Gui Qt5::OpenGL Qt5::Xml)
-    include_directories(
-            ${Qt5Core_INCLUDE_DIRS}
-            ${Qt5Widgets_INCLUDE_DIRS}
-            ${Qt5Gui_INCLUDE_DIRS}
-            ${Qt5OpenGL_INCLUDE_DIRS}
-            ${Qt5Xml_INCLUDE_DIRS}
-        )
-else()
-    find_package( Qt4 4.8.0 COMPONENTS QtCore QtGui QtOpenGL QtXml REQUIRED )
-    include( ${QT_USE_FILE} )
-    add_definitions( ${QT_DEFINITIONS} )
-endif()
-
 # pybind11
 find_package(pybind11 REQUIRED)
 
@@ -100,14 +75,13 @@ find_package( Carna 3.0.0 REQUIRED )
 include_directories( ${CARNA_INCLUDE_DIR} )
 set(CARNA_VERSION ${FOUND_VERSION})
 
-# CarnaQt
-find_package( CarnaQt 1.0.2 REQUIRED )
-include_directories( ${CARNAQT_INCLUDE_DIR} )
-
 ############################################
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
                 ${CMAKE_CURRENT_BINARY_DIR}/__init__.py @ONLY)
+
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
+                ${CMAKE_CURRENT_BINARY_DIR}/py.py COPYONLY)
 
 #configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/Doxyfile.in
 #                ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/Doxyfile @ONLY)
@@ -148,46 +122,13 @@ set( DOC_SRC
     )
 
 ############################################
-
-if(Qt5_FOUND)
-    QT5_WRAP_CPP( PRIVATE_HEADERS_MOC ${PRIVATE_QOBJECT_HEADERS} )
-    QT5_WRAP_UI( FORMS_HEADERS ${FORMS} )
-    QT5_ADD_RESOURCES( RESOURCES_RCC ${RESOURCES} )
-else(Qt5_FOUND)
-    QT4_WRAP_CPP( PRIVATE_HEADERS_MOC ${PRIVATE_QOBJECT_HEADERS} )
-    QT4_WRAP_UI( FORMS_HEADERS ${FORMS} )
-    QT4_ADD_RESOURCES( RESOURCES_RCC ${RESOURCES} )
-endif(Qt5_FOUND)
-
-############################################
-# Exclude all source files from build,
-# since we are using unity build.
-############################################
-
-#set_source_files_properties(    ${SRC}
-#                                ${PRIVATE_HEADERS_MOC}
-#                                ${FORMS_HEADERS}
-#                                ${RESOURCES_RCC}
-#                                ${DOC_SRC}
-#    PROPERTIES
-#    HEADER_FILE_ONLY TRUE )
-
-############################################
 include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 ############################################
 
 set(EXTRA_SOURCES_egl src/egl/Context.cpp)
 foreach( MODULE ${MODULES} )
     pybind11_add_module(${MODULE} src/py/${MODULE}.cpp ${EXTRA_SOURCES_${MODULE}})
-#    add_library(
-#        ${MODULE} SHARED
-#        src/py/${MODULE}.cpp
-#        ${PRIVATE_HEADERS}
-#        ${PRIVATE_HEADERS_MOC}
-#        ${FORMS_HEADERS}
-#        ${RESOURCES_RCC}
-#        ${DOC_SRC}
-#    )
+    target_compile_options(${MODULE} PRIVATE -fvisibility=default -fno-lto)
 
     SET_TARGET_PROPERTIES(${MODULE} PROPERTIES PREFIX "")
 endforeach( MODULE )
@@ -206,10 +147,9 @@ foreach( MODULE ${MODULES} )
         PRIVATE
         ${OPENGL_LIBRARIES}
         ${CARNA_LIBRARIES}
-        ${CARNAQT_LIBRARIES}
-        ${QT_LIBRARIES}
         OpenGL::EGL
     )
+
 endforeach( MODULE )
 
 ############################################
@@ -221,16 +161,10 @@ install(TARGETS ${MODULES}
         ARCHIVE DESTINATION ${INSTALL_LIBRARY_DIR}
         LIBRARY DESTINATION ${INSTALL_LIBRARY_DIR})
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
+        ${CMAKE_CURRENT_BINARY_DIR}/py.py
         DESTINATION ${INSTALL_LIBRARY_DIR})
-
-# install headers
-#install(DIRECTORY ${CMAKE_PROJECT_DIR}include/CarnaPy
-#        DESTINATION ${INSTALL_HEADERS_DIR})
-
-# install CMake Find<Module> file
-#install(    FILES ${CMAKE_CURRENT_BINARY_DIR}/misc/Find${PROJECT_NAME}.cmake
-#            DESTINATION ${INSTALL_CMAKE_DIR})
 
 ############################################
 # Process unit tests
