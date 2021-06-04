@@ -1,8 +1,8 @@
 import test_tools
-import base
-import presets
-import egl
-import helpers
+import carna.base    as base
+import carna.presets as presets
+import carna.egl     as egl
+import carna.helpers as helpers
 import math
 import numpy as np
 import scipy.ndimage as ndi
@@ -67,9 +67,9 @@ data[tuple(data_center)] = False
 data = ndi.distance_transform_edt(data)
 data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
 
-grid_helper = helpers.UInt12VolumeGridHelper.create( data.shape );
-grid_helper.load_data( data )
-volume = grid_helper.create_node( GEOMETRY_TYPE_VOLUME, helpers.Dimensions( [100, 100, 100] ) )
+grid_helper = helpers.UInt12VolumeGridHelper.create(data.shape)
+grid_helper.load_data(data)
+volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
 root.attach_child(volume)
 
 # ============================
@@ -84,7 +84,7 @@ rs_dvr.write_color_map(0.2, 1, [1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 0.2])
 
 ctx = egl.Context.create()
 surface = base.Surface.create(ctx, w, h)
-renderer = base.FrameRenderer.create( ctx, w, h )
+renderer = base.FrameRenderer.create(ctx, w, h)
 
 renderer_helper = helpers.FrameRendererHelper(renderer)
 renderer_helper.add_stage(rs_dvr)

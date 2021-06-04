@@ -48,18 +48,18 @@ PYBIND11_MODULE(helpers, m)
         , py::return_value_policy::reference, "geometryType"_a, "meshRole"_a, "materialRole"_a, "pointSize"_a = PointMarkerHelper__DEFAULT_POINT_SIZE )
         .def_readonly_static( "DEFAULT_POINT_SIZE", &PointMarkerHelper__DEFAULT_POINT_SIZE )
         .def( "release_geometry_features", &PointMarkerHelper::releaseGeometryFeatures )
-        .def( "create_point_marker", []( const PointMarkerHelper* helper, unsigned int* pointSize, const Color* color )
+        .def( "create_point_marker", []( const PointMarkerHelper* helper, unsigned int* pointSize, const math::Vector4f* color )
         {
             if( pointSize == nullptr && color == nullptr ) return helper->createPointMarker();
             if( pointSize == nullptr && color != nullptr ) return helper->createPointMarker( *color );
             if( pointSize != nullptr && color == nullptr ) return helper->createPointMarker( *pointSize );
             if( pointSize != nullptr && color != nullptr ) return helper->createPointMarker( *color, *pointSize );
         }
-        , "pointSize"_a = nullptr, "color"_a = nullptr )
+        , py::return_value_policy::reference, "pointSize"_a = nullptr, "color"_a = nullptr )
         .def_readonly( "geometry_type", &PointMarkerHelper::geometryType )
-        .def_readonly( "meshRole", &PointMarkerHelper::meshRole )
-        .def_readonly( "materialRole", &PointMarkerHelper::materialRole )
-        .def_readonly( "pointSize", &PointMarkerHelper::pointSize )
+        .def_readonly( "mesh_role", &PointMarkerHelper::meshRole )
+        .def_readonly( "material_role", &PointMarkerHelper::materialRole )
+        .def_readonly( "point_size", &PointMarkerHelper::pointSize )
         .def_static( "reset_default_color", &PointMarkerHelper::resetDefaultColor )
         .DEF_FREE( PointMarkerHelper );
 

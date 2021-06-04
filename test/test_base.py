@@ -1,5 +1,5 @@
-import base
-import egl
+import carna.base as base
+import carna.egl  as egl
 import numpy as np
 
 import faulthandler

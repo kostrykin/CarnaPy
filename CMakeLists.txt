@@ -15,6 +15,10 @@ set(FULL_VERSION ${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION})
 set(TARGET_NAME ${PROJECT_NAME}-${FULL_VERSION})
 string(TOUPPER ${PROJECT_NAME} PROJECT_NAME_CAPS)
 
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/carna)
+
 ############################################
 # Set default options for this build
 ############################################
@@ -78,10 +82,10 @@ set(CARNA_VERSION ${FOUND_VERSION})
 ############################################
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/__init__.py.in
-                ${CMAKE_CURRENT_BINARY_DIR}/__init__.py @ONLY)
+                ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py @ONLY)
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/misc/py.py
-                ${CMAKE_CURRENT_BINARY_DIR}/py.py COPYONLY)
+                ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py COPYONLY)
 
 #configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/Doxyfile.in
 #                ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/Doxyfile @ONLY)
@@ -122,7 +126,7 @@ set( DOC_SRC
     )
 
 ############################################
-include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
+#include_directories( ${CMAKE_CURRENT_BINARY_DIR} )
 ############################################
 
 set(EXTRA_SOURCES_egl src/egl/Context.cpp)
@@ -162,8 +166,8 @@ install(TARGETS ${MODULES}
         LIBRARY DESTINATION ${INSTALL_LIBRARY_DIR})
 
 install(FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/__init__.py
-        ${CMAKE_CURRENT_BINARY_DIR}/py.py
+        ${CMAKE_CURRENT_BINARY_DIR}/carna/__init__.py
+        ${CMAKE_CURRENT_BINARY_DIR}/carna/py.py
         DESTINATION ${INSTALL_LIBRARY_DIR})
 
 ############################################

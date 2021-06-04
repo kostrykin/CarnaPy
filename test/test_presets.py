@@ -1,8 +1,8 @@
 import test_tools
-import base
-import presets
-import egl
-import helpers
+import carna.base    as base
+import carna.presets as presets
+import carna.egl     as egl
+import carna.helpers as helpers
 import numpy as np
 import scipy.ndimage as ndi
 
@@ -76,15 +76,15 @@ data = ndi.distance_transform_edt(data)
 data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
 
 root = base.Node.create()
-grid_helper = helpers.UInt12VolumeGridHelper.create( data.shape );
+grid_helper = helpers.UInt12VolumeGridHelper.create(data.shape);
 grid_helper.load_data( data )
-volume = grid_helper.create_node( GEOMETRY_TYPE_VOLUME, helpers.Dimensions( [100, 100, 100] ) )
+volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
 root.attach_child(volume)
 root.attach_child(cam)
 
-renderer = base.FrameRenderer.create( ctx, w, h )
+renderer = base.FrameRenderer.create(ctx, w, h)
 mip = presets.MIPStage.create(GEOMETRY_TYPE_VOLUME)
-mip.append_layer( presets.MIPLayer.create( 0, 1, [1, 1, 1, 1] ) )
+mip.append_layer( presets.MIPLayer.create(0, 1, [1, 1, 1, 1]))
 renderer.append_stage(mip)
 
 surface.begin()
