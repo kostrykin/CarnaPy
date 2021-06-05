@@ -28,14 +28,13 @@ boxes = [[ 100, -100, 0], [-100, 100, 0]]
 # Perform rendering
 # ============================
 
-import carna.helpers
 with cpy.SingleFrameContext((100, 200), fov=45, near=1, far=1000) as rc:
     rc.dots(dots, color=(0,1,0,1), size=8)
     green = rc.material((0,1,0,1))
     box = rc.box(20, 20, 20)
     for loc in boxes:
         rc.mesh(box, green).translate(*loc)
-    rc.volume(data, carna.helpers.Dimensions((100, 100, 100)))
+    rc.volume(data, dimensions=(100, 100, 100))
     rc.mip()
     rc.camera.translate(0, 0, 250)
 

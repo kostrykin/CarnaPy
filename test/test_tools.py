@@ -4,6 +4,18 @@ import numpy as np
 
 SOURCE_PATH = pathlib.Path('@CMAKE_CURRENT_SOURCE_DIR@')
 
+class Color:
+   PURPLE = '\033[95m'
+   CYAN = '\033[96m'
+   DARKCYAN = '\033[36m'
+   BLUE = '\033[94m'
+   GREEN = '\033[92m'
+   YELLOW = '\033[93m'
+   RED = '\033[91m'
+   BOLD = '\033[1m'
+   UNDERLINE = '\033[4m'
+   END = '\033[0m'
+
 def get_expected_rendering(name):
     expected_img_path = SOURCE_PATH / f'renderings/{name}.png'
     assert expected_img_path.is_file(), expected_img_path
@@ -18,8 +30,8 @@ def assert_rendering(name, result):
         assert np.allclose(expected_img, result), np.linalg.norm(result - expected_img)
     except:
         output_path = f'/tmp/{name}.png'
-        print(f'Test failed: {name}')
-        print(f'Result written to: {output_path}')
+        print(f'{Color.BOLD}{Color.RED}Test failed: {name}{Color.END}')
+        print(f'{Color.BOLD}Result written to: {output_path}{Color.END}')
         plt.imsave(output_path, result)
         raise
 

@@ -21,6 +21,17 @@ class SpatialWrapper:
 
     def translate(self, *args):
         self._.local_transform = self._.local_transform @ carna.base.math.translation4f(*args)
+        return self
+
+    def rotate(self, axis, amount, units='rad'):
+        assert units in ('rad', 'deg')
+        if units == 'deg': amount = carna.base.math.deg2rad(amount)
+        self._.local_transform = self._.local_transform @ carna.base.math.rotation4f(axis, amount)
+        return self
+
+    def scale(self, *args):
+        self._.local_transform = self._.local_transform @ carna.base.math.scaling4f(*args)
+        return self
 
 
 class SingleFrameContext:
@@ -78,7 +89,10 @@ class SingleFrameContext:
     def camera(self):
         return SpatialWrapper(self._camera)
 
-    def volume(self, data, size_hint):
+    def volume(self, data, dimensions=None, spacing=None):
+        assert (dimensions is None) != (spacing is None)
+        if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
+        if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
         grid = carna.helpers.UInt12VolumeGridHelper.create(data.shape)
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_VOLUME, size_hint)
@@ -139,6 +153,7 @@ class SingleFrameContext:
         return box
 
     def mesh(self, mesh, material):
+        self.opaque() ## require opaque rendering stage
         geom = carna.base.Geometry.create(SingleFrameContext.GEOMETRY_TYPE_OPAQUE)
         geom.put_feature(carna.presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, mesh)
         geom.put_feature(carna.presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material)

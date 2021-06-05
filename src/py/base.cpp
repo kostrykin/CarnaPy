@@ -27,13 +27,13 @@ using namespace Carna::py;
 py::array_t< unsigned char > Surface__end( const Surface& surface )
 {
     const unsigned char* pixelData = surface.end();
-    py::buffer_info buf;
-    buf.ptr      = const_cast< unsigned char* >( pixelData );
+    py::buffer_info buf; // performs flipping
     buf.itemsize = sizeof( unsigned char );
     buf.format   = py::format_descriptor< unsigned char >::value;
     buf.ndim     = 3;
     buf.shape    = { surface.height(), surface.width(), 3 };
-    buf.strides  = { buf.itemsize * 3 * surface.width(), buf.itemsize * 3, buf.itemsize };
+    buf.strides  = { -buf.itemsize * 3 * surface.width(), buf.itemsize * 3, buf.itemsize };
+    buf.ptr      = const_cast< unsigned char* >( pixelData ) + buf.itemsize * 3 * surface.width() * (surface.height() - 1);
     return py::array( buf );
 }
 

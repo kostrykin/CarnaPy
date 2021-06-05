@@ -16,20 +16,6 @@ using namespace pybind11::literals; // enables the _a literal
 using namespace Carna::base;
 using namespace Carna::helpers;
 
-#include <iostream>
-void FrameRendererHelper__commit( FrameRendererHelper< >* self, bool clear )
-{
-    try
-    {
-        self->commit( clear );
-    }
-    catch( const CarnaException& ex )
-    {
-        std::cout << ex.message << std::endl;
-        std::cout << ex.details << std::endl;
-    }
-}
-
 PYBIND11_MODULE(helpers, m)
 {
 
@@ -94,8 +80,7 @@ PYBIND11_MODULE(helpers, m)
         .def( py::init< RenderStageSequence& >() )
         .def( "add_stage", &FrameRendererHelper< >::operator<< )
         .def( "reset", &FrameRendererHelper< >::reset )
-        //.def( "commit", &FrameRendererHelper< >::commit, "clear"_a = true );
-        .def( "commit", &FrameRendererHelper__commit, "clear"_a = true );
+        .def( "commit", &FrameRendererHelper< >::commit, "clear"_a = true );
 
 }
 
