@@ -1,10 +1,7 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(CarnaPy)
 include(FindPackageHandleStandardArgs)
-
-set(MAJOR_VERSION   0)
-set(MINOR_VERSION   0)
-set(PATCH_VERSION   1)
+include(version.cmake)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

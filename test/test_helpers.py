@@ -67,7 +67,7 @@ data[tuple(data_center)] = False
 data = ndi.distance_transform_edt(data)
 data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
 
-grid_helper = helpers.UInt12VolumeGridHelper.create(data.shape)
+grid_helper = helpers.VolumeGrid_UInt12Intensity.create(data.shape)
 grid_helper.load_data(data)
 volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
 root.attach_child(volume)

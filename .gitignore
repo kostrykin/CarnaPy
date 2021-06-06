@@ -1,2 +1,6 @@
 /build
+/cbuild
 /dist
+/version.cmake
+/CarnaPy.egg-info
+.ipynb_checkpoints

@@ -24,10 +24,13 @@ cam.projection = base.math.frustum4f(base.math.deg2rad(45), 1, 10, 2000) @ base.
 root.attach_child(cam)
 
 box_mesh  = base.create_box(40, 40, 40)
+ball_mesh = base.create_ball(35)
 material1 = base.Material.create('unshaded')
 material2 = base.Material.create('unshaded')
+material3 = base.Material.create('unshaded')
 material1.set_parameter4f('color', [1, 0, 0, 1])
 material2.set_parameter4f('color', [0, 1, 0, 1])
+material3.set_parameter4f('color', [0, 0, 1, 1])
 
 GEOMETRY_TYPE_OPAQUE = 0
 
@@ -43,7 +46,14 @@ box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material2)
 box2.local_transform = base.math.translation4f(+10, +10, +40)
 root.attach_child(box2)
 
+ball = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
+ball.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, ball_mesh)
+ball.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material3)
+ball.local_transform = base.math.translation4f(-20, +25, 40)
+root.attach_child(ball)
+
 box_mesh .release()
+ball_mesh.release()
 material1.release()
 material2.release()
 
@@ -76,7 +86,7 @@ data = ndi.distance_transform_edt(data)
 data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
 
 root = base.Node.create()
-grid_helper = helpers.UInt12VolumeGridHelper.create(data.shape);
+grid_helper = helpers.VolumeGrid_UInt12Intensity.create(data.shape);
 grid_helper.load_data( data )
 volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
 root.attach_child(volume)

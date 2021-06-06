@@ -16,6 +16,31 @@ using namespace pybind11::literals; // enables the _a literal
 using namespace Carna::base;
 using namespace Carna::helpers;
 
+template< typename VolumeGridHelperType, typename Module >
+void defineVolumeGridHelper( Module& m, const char* name )
+{
+    py::class_< VolumeGridHelperType >( m, name )
+        .def_static( "create", []( const math::Vector3ui& nativeResolution, std::size_t maxSegmentBytesize )
+        {
+            return new VolumeGridHelperType( nativeResolution, maxSegmentBytesize );
+        }
+        , py::return_value_policy::reference, "nativeResolution"_a, "maxSegmentBytesize"_a = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })() )
+        .def( "load_data", []( VolumeGridHelperType* self, py::array_t< double > data )
+        {
+            const auto rawData = data.unchecked< 3 >();
+            const auto voxel2huv = [ &rawData ]( const math::Vector3ui voxel ) -> HUV
+            {
+                return Carna::py::float2huv( rawData( voxel.x(), voxel.y(), voxel.z() ) );
+            };
+            return self->loadData( voxel2huv );
+        }
+        , "data"_a )
+        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
+        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
+        .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
+        .DEF_FREE( VolumeGridHelperType );
+}
+
 PYBIND11_MODULE(helpers, m)
 {
 
@@ -55,26 +80,8 @@ PYBIND11_MODULE(helpers, m)
     py::class_< VolumeGridHelperBase::Dimensions >( m, "Dimensions" )
         .def( py::init< const math::Vector3f& >() );
 
-    py::class_< VolumeGridHelper< HUVolumeUInt16 > >( m, "UInt12VolumeGridHelper" )
-        .def_static( "create", []( const math::Vector3ui& nativeResolution, std::size_t maxSegmentBytesize )
-        {
-            return new VolumeGridHelper< HUVolumeUInt16 >( nativeResolution, maxSegmentBytesize );
-        }
-        , py::return_value_policy::reference, "nativeResolution"_a, "maxSegmentBytesize"_a = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })() )
-        .def( "load_data", []( VolumeGridHelper< HUVolumeUInt16 >* self, py::array_t< double > data )
-        {
-            const auto rawData = data.unchecked< 3 >();
-            const auto voxel2huv = [ &rawData ]( const math::Vector3ui voxel ) -> HUV
-            {
-                return Carna::py::float2huv( rawData( voxel.x(), voxel.y(), voxel.z() ) );
-            };
-            return self->loadData( voxel2huv );
-        }
-        , "data"_a )
-        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelper< HUVolumeUInt16 >::createNode, py::const_ ), py::return_value_policy::reference )
-        .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelper< HUVolumeUInt16 >::createNode, py::const_ ), py::return_value_policy::reference )
-        .def( "release_geometry_features", &VolumeGridHelper< HUVolumeUInt16 >::releaseGeometryFeatures )
-        .DEF_FREE( VolumeGridHelper< HUVolumeUInt16 > );
+    defineVolumeGridHelper< VolumeGridHelper< HUVolumeUInt16 > >( m, "VolumeGrid_UInt12Intensity" );
+    defineVolumeGridHelper< VolumeGridHelper< HUVolumeUInt16, NormalMap3DInt8 > >( m, "VolumeGrid_UInt12Intensity_Int8Normal" );
 
     py::class_< FrameRendererHelper< > >( m, "FrameRendererHelper" )
         .def( py::init< RenderStageSequence& >() )

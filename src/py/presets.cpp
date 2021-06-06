@@ -55,6 +55,9 @@ PYBIND11_MODULE(presets, m)
         .def( "disable_stage", &OccludedRenderingStage::disableStage )
         .def( "is_stage_enabled", &OccludedRenderingStage::isStageEnabled );
 
+    py::class_< VolumeRenderingStage, RenderStage >( m, "VolumeRenderingStage" )
+        .def_property( "sample_rate", &VolumeRenderingStage::sampleRate, &VolumeRenderingStage::setSampleRate );
+
     const static auto MIPLayer__LAYER_FUNCTION_ADD     = ([](){ return MIPLayer::LAYER_FUNCTION_ADD;     })();
     const static auto MIPLayer__LAYER_FUNCTION_REPLACE = ([](){ return MIPLayer::LAYER_FUNCTION_REPLACE; })();
 
@@ -70,7 +73,7 @@ PYBIND11_MODULE(presets, m)
         .def_readonly_static( "LAYER_FUNCTION_REPLACE", &MIPLayer__LAYER_FUNCTION_REPLACE )
         .DEF_FREE( MIPLayer );
 
-    py::class_< MIPStage, RenderStage >( m, "MIPStage" )
+    py::class_< MIPStage, VolumeRenderingStage >( m, "MIPStage" )
         .def_static( "create", []( unsigned int geometryType )
         {
             return new MIPStage( geometryType );
@@ -104,7 +107,7 @@ PYBIND11_MODULE(presets, m)
         .def( "set_windowing", &CuttingPlanesStage__set_windowing )
         .def_property( "rendering_inverse", &CuttingPlanesStage::isRenderingInverse, &CuttingPlanesStage::setRenderingInverse );
 
-    py::class_< DVRStage, RenderStage >( m, "DVRStage" )
+    py::class_< DVRStage, VolumeRenderingStage >( m, "DVRStage" )
         .def_static( "create", []( unsigned int geometryType )
         {
             return new DVRStage( geometryType );

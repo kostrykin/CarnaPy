@@ -1,9 +1,14 @@
 import atexit
+import carna
 import carna.base
 import carna.egl
 import carna.presets
 import carna.helpers
 import numpy as np
+
+
+version    = carna.version
+py_version = carna.py_version
 
 
 # Create the OpenGL context when module is loaded
@@ -89,11 +94,12 @@ class SingleFrameContext:
     def camera(self):
         return SpatialWrapper(self._camera)
 
-    def volume(self, data, dimensions=None, spacing=None):
+    def volume(self, data, dimensions=None, spacing=None, normals=False):
         assert (dimensions is None) != (spacing is None)
         if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
         if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
-        grid = carna.helpers.UInt12VolumeGridHelper.create(data.shape)
+        grid_helper_type = ('VolumeGrid_UInt12Intensity_Int8Normal' if normals else 'VolumeGrid_UInt12Intensity')
+        grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_VOLUME, size_hint)
         self._root.attach_child(volume)
@@ -101,8 +107,9 @@ class SingleFrameContext:
         return SpatialWrapper(volume)
 
     def plane(self, *args):
-        plane = carna.base.Geometry.create(GEOMETRY_TYPE_PLANE)
-        plane.local_transform = carna.base.plane4f(*args)
+        self.planes() ## require cutting planes rendering stage
+        plane = carna.base.Geometry.create(SingleFrameContext.GEOMETRY_TYPE_PLANE)
+        plane.local_transform = carna.base.math.plane4f(*args)
         self._root.attach_child(plane)
         return SpatialWrapper(plane)
 
@@ -115,19 +122,23 @@ class SingleFrameContext:
     def occluded(self):
         return self._get_stage(carna.presets.OccludedRenderingStage)
 
-    def mip(self, layers=[(0, 1, (1,1,1,1))]):
+    def mip(self, layers=[(0, 1, (1,1,1,1))], **kwargs):
         mip = self._get_stage(carna.presets.MIPStage, SingleFrameContext.GEOMETRY_TYPE_VOLUME)
         mip.clear_layers()
         for layer in layers:
             mip.append_layer(carna.presets.MIPLayer.create(*layer))
+        for key, val in kwargs.items():
+            setattr(mip, key, val)
         return mip
 
-    def dvr(self, translucency=0, color_map=[(0, 1, (1,1,1,0), (1,1,1,1))]):
+    def dvr(self, translucency=0, color_map=[(0, 1, (1,1,1,0), (1,1,1,1))], **kwargs):
         dvr = self._get_stage(carna.presets.DVRStage, SingleFrameContext.GEOMETRY_TYPE_VOLUME)
         dvr.translucency = translucency
         dvr.clear_color_map()
         for color_map_entry in color_map:
             dvr.write_color_map(*color_map_entry)
+        for key, val in kwargs.items():
+            setattr(dvr, key, val)
         return dvr
 
     def dots(self, data, color, size):
@@ -152,6 +163,11 @@ class SingleFrameContext:
         self._meshes.append(box)
         return box
 
+    def ball(self, radius, degree=3):
+        ball = carna.base.create_ball(radius, degree)
+        self._meshes.append(ball)
+        return ball
+
     def mesh(self, mesh, material):
         self.opaque() ## require opaque rendering stage
         geom = carna.base.Geometry.create(SingleFrameContext.GEOMETRY_TYPE_OPAQUE)
@@ -159,5 +175,12 @@ class SingleFrameContext:
         geom.put_feature(carna.presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material)
         self._root.attach_child(geom)
         return SpatialWrapper(geom)
+
+    def meshes(self, mesh, material, locations):
+        geoms = []
+        for loc in locations:
+            geom = self.mesh(mesh, material).translate(*loc)
+            geoms.append(geom)
+        return geoms
 
 
