@@ -78,7 +78,7 @@ if __name__ == '__main__':
         author_email = 'leonid.kostrykin@bioquant.uni-heidelberg.de',
         url = 'https://github.com/kostrykin/CarnaPy',
         include_package_data = True,
-        license = 'MIT',
+        license = 'BSD',
         package_dir = {
             'carna': 'build/make_release/carna',
         },
@@ -93,7 +93,7 @@ if __name__ == '__main__':
         classifiers = [
             'Development Status :: 3 - Alpha',
             'Environment :: GPU',
-            'License :: OSI Approved :: MIT License',
+            'License :: OSI Approved :: BSD License',
             'Operating System :: POSIX :: Linux',
             'Programming Language :: C++',
             'Programming Language :: Python',

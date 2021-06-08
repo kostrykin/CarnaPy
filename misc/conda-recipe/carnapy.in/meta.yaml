@@ -40,8 +40,8 @@ test:
 
 about:
   home: "http://evoid.de"
-  license: MIT
-  license_family: MIT
+  license: BSD
+  license_family: BSD
   license_file: 
   summary: "General-purpose real-time 3D visualization"
   doc_url: 
