@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.0.2)
 project(CarnaPy)
 include(FindPackageHandleStandardArgs)
-include(version.cmake)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -73,7 +72,7 @@ find_package( Eigen3 REQUIRED )
 include_directories( ${EIGEN3_INCLUDE_DIR} )
 
 # Carna
-find_package( Carna 3.0.0 REQUIRED )
+find_package( Carna ${REQUIRED_VERSION_CARNA} REQUIRED )
 include_directories( ${CARNA_INCLUDE_DIR} )
 set(CARNA_VERSION ${FOUND_VERSION})
 

@@ -21,7 +21,7 @@ foreach( TEST_FILE ${TEST_FILES} )
 
     add_custom_target(
         ${TEST_FILE}
-        COMMAND python3 -Xfaulthandler -c "import ${TEST_FILE}"
+        COMMAND ${PYTHON_EXECUTABLE} -Xfaulthandler -c "import ${TEST_FILE}"
         WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/.."
         DEPENDS ${MODULES}
         COMMENT "Running ${TEST_FILE}..."

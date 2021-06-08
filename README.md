@@ -1,53 +1,67 @@
 CarnaPy
 ========
 
-The aim of this package is to provide general-purpose real-time 3D visualization for specifically, but not limited to, biomedical data, using Python. The library is based on [Carna](https://github.com/RWTHmediTEC/Carna).
+The aim of this package is to provide real-time 3D visualization in Python for specifically, but not limited to, biomedical data. The library is based on [Carna](https://github.com/kostrykin/Carna).
 
 See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
+
+[![Anaconda-Server Badge](https://anaconda.org/kostrykin/carnapy/badges/version.svg)](https://anaconda.org/kostrykin/carnapy)
+[![Anaconda-Server Badge](https://anaconda.org/kostrykin/carnapy/badges/platforms.svg)](https://anaconda.org/kostrykin/carnapy)
+[![Anaconda-Server Badge](https://anaconda.org/kostrykin/carnapy/badges/installer/conda.svg)](https://conda.anaconda.org/kostrykin)
 
 ---
 ## Contents
 
 * [Limitations](#1-limitations)
 * [Dependencies](#2-dependencies)
-* [Build instructions](#3-build-instructions)
+* [Installation](#3-installation)
+* [Build instructions](#4-build-instructions)
  
 ---
 ## 1. Limitations
 
 * Only 12bit volume data is supported at the moment. Extension to 16bit or beyond should be straight-forward.
 * DRR renderings are not exposed to Python yet.
+* Build process is currently limited to Linux-based systems.
 
 ---
 ## 2. Dependencies
 
-The following dependencies must be satisfied for the build process:
-
-* [Eigen](http://eigen.tuxfamily.org/) ≥ 3.0.5
-* [Carna](https://github.com/RWTHmediTEC/Carna)
-* [libboost-iostreams](https://www.boost.org/doc/libs/1_76_0/libs/iostreams/doc/index.html)
+Using the library requires the following dependencies:
+* [numpy](https://numpy.org/) ≥ 1.16
+* EGL driver support
 * OpenGL 3.3
-* GLEW ≥ 1.7
-* EGL
-* Python 3
+* Python ≥ 3.7
+
+The following dependencies must be satisfied for the build process:
+* [Carna](https://github.com/kostrykin/Carna) ≥ 3.1
+* [Eigen](http://eigen.tuxfamily.org/) ≥ 3.0.5
+* [libboost-iostreams](https://www.boost.org/doc/libs/1_76_0/libs/iostreams/doc/index.html)
 * [pybind11](https://github.com/pybind/pybind11)
-* Linux environment and Conda
+* EGL development files
 
-The build process has been tested with following tools and versions:
-
-* **Eigen 3.2.10** is known to be fully supported.
-* **GCC 7.5** is known to be fully supported.
-* **Python 3.8.5** is known to be fully supported.
-* **Ubuntu 18.04** is known to be fully supported.
-* **pybind11 2.5.0** is known to be fully supported.
+In addition, the following dependencies are required to run the test suite:
+* [matplotlib](https://matplotlib.org/)
+* [scipy](https://www.scipy.org/)
 
 ---
-## 3. Build instructions
+## 3. Installation
+
+The easiest way to install and use the library is to use one of the binary [Conda](https://docs.anaconda.com/anaconda/install/) packages:
+
+```bash
+conda install -c kostrykin carnapy
+```
+
+Conda packages are available for Python 3.7–3.9.
+
+---
+## 4. Build instructions
 
 Assuming you are using a recent version of Ubuntu:
 
 ```bash
-sudo apt-get -qq install libglew-dev libegl1-mesa-dev libboost-iostreams-dev
+sudo apt-get -qq install libegl1-mesa-dev libboost-iostreams-dev
 ```
 
 Create and activate a Conda environment to work in, then:
@@ -56,7 +70,7 @@ Create and activate a Conda environment to work in, then:
 conda install -c conda-forge pybind11
 ```
 
-Download a recent version of [Eigen](http://eigen.tuxfamily.org), unpack it, and tell CMake where it is located:
+Grab a recent version of [Eigen](http://eigen.tuxfamily.org), unpack it, and tell CMake where it is located:
 
 ```bash
 wget https://gitlab.com/libeigen/eigen/-/archive/3.2.10/eigen-3.2.10.tar.gz
@@ -67,16 +81,15 @@ export CMAKE_PREFIX_PATH="/tmp/eigen-3.2.10:$CMAKE_PREFIX_PATH"
 If you have not already, download, build, and install Carna:
 
 ```bash
-cd /tmp
-git clone git@github.com:RWTHmediTEC/Carna.git
-cd Carna
+git clone git@github.com:kostrykin/Carna.git build_carna
+cd build_carna
 sh linux_build.sh
 ```
 
 Now it is time to build, package, and install CarnaPy:
 ```
-cd /tmp/CarnaPy
-python setup.py bdist_wheel
-python -m pip install CarnaPy/dist/CarnaPy-*.whl
+cd ..
+python setup.py build
+python setup.py install
 ```
 

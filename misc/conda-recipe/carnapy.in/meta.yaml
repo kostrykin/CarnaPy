@@ -1,5 +1,5 @@
 {% set name = "CarnaPy" %}
-{% set version = "0.0.10" %}
+{% set version = "$VERSION_CARNA_PY" %}
 
 package:
   name: "{{ name|lower }}"
@@ -17,23 +17,26 @@ requirements:
     - cmake
     - pybind11
     - boost-cpp
-    - glew
     - eigen
-    - matplotlib # for tests only
-    - scipy      # for tests only
   host:
-    - numpy
+    - pyyaml
     - pip
     - python
+    - numpy
+    - matplotlib # for tests only
+    - scipy      # for tests only
   run:
     - numpy
     - python
-    - packaging
 
 test:
   imports:
     - carna
-    - carna_debug
+    - carna.py
+    - carna.base
+    - carna.helpers
+    - carna.presets
+    - carna.egl
 
 about:
   home: "http://evoid.de"
@@ -42,7 +45,7 @@ about:
   license_file: 
   summary: "General-purpose real-time 3D visualization"
   doc_url: 
-  dev_url: 
+  dev_url: "https://github.com/kostrykin/CarnaPy"
 
 extra:
   recipe-maintainers:

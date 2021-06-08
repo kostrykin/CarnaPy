@@ -1,5 +1,6 @@
 #include <Carna/egl/Context.h>
 #include <EGL/egl.h>
+#include <cstdlib>
 
 // see: https://developer.nvidia.com/blog/egl-eye-opengl-visualization-without-x-server/
 
@@ -97,6 +98,8 @@ Context::Context( Details* _pimpl )
 
 Context* Context::create()
 {
+    unsetenv( "DISPLAY" ); // see https://stackoverflow.com/q/67885750/1444073
+
     Details* const pimpl = new Details();
     pimpl->eglDpy = eglGetDisplay( EGL_DEFAULT_DISPLAY );
     EGLint major, minor;

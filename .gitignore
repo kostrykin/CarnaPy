@@ -1,6 +1,6 @@
 /build
-/cbuild
 /dist
-/version.cmake
 /CarnaPy.egg-info
+/misc/conda-recipe/carnapy
 .ipynb_checkpoints
+*.swp

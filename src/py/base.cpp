@@ -55,90 +55,6 @@ math::Matrix4f math__plane4f_by_support( const math::Vector3f& normal, const mat
     return math::plane4f( normalized( normal ), support );
 }
 
-// createBall --->
-#include <iostream>
-template< typename VertexType, typename VectorType >
-VertexType vertex( const VectorType& v )
-{
-    VertexType vertex;
-    vertex.x = v.x();
-    vertex.y = v.y();
-    vertex.z = v.z();
-    return vertex;
-}
-
-template< typename VertexType >
-ManagedMesh< VertexType, uint16_t >& createBall( float radius, unsigned int degree )
-{
-    const math::Matrix4f baseTransform = math::scaling4f( radius, radius, radius );
-    const unsigned int verticesPerEdge = 2 + degree;
-    const unsigned int verticesPerSide = verticesPerEdge * verticesPerEdge;
-    const unsigned int    facesPerSide = ( verticesPerEdge - 1 ) * ( verticesPerEdge - 1 );
-    const unsigned int  indicesPerSide = 6 * facesPerSide;
-
-    /* Define sides.
-     */
-    math::Matrix4f transforms[ 6 ];
-    transforms[ 0 ] = math::basis4f( math::Vector3f(  0,  0, +1 ), math::Vector3f(  0, +1,  0 ), math::Vector3f( -1,  0,  0 ) );  // left
-    transforms[ 1 ] = math::basis4f( math::Vector3f(  0,  0, -1 ), math::Vector3f(  0, +1,  0 ), math::Vector3f( +1,  0,  0 ) );  // right
-    transforms[ 2 ] = math::basis4f( math::Vector3f( +1,  0,  0 ), math::Vector3f(  0, +1,  0 ), math::Vector3f(  0,  0, +1 ) );  // front
-    transforms[ 3 ] = math::basis4f( math::Vector3f( -1,  0,  0 ), math::Vector3f(  0, +1,  0 ), math::Vector3f(  0,  0, -1 ) );  // back
-    transforms[ 4 ] = math::basis4f( math::Vector3f( +1,  0,  0 ), math::Vector3f(  0,  0, -1 ), math::Vector3f(  0, +1,  0 ) );  // top
-    transforms[ 5 ] = math::basis4f( math::Vector3f( +1,  0,  0 ), math::Vector3f(  0,  0, +1 ), math::Vector3f(  0, -1,  0 ) );  // bottom
-
-    const std::size_t verticesCount = 6 * verticesPerSide;
-    const std::size_t indicesCount  = 6 * indicesPerSide;
-    CARNA_ASSERT(indicesCount < ( 1 << 16 ));
-
-    typedef ManagedMesh< VertexType, uint16_t > MeshInstance;
-    typedef typename MeshInstance::Vertex Vertex;
-    typedef typename MeshInstance:: Index  Index;
-    Vertex vertices[ verticesCount ];
-    Index   indices[  indicesCount ];
-
-    int lastVertex = -1;
-    int lastIndex  = -1;
-
-    /* Create vertices and indices.
-     */
-    for( unsigned int sideIndex = 0; sideIndex < 6; ++sideIndex )
-    {
-        const math::Matrix4f transform = baseTransform * transforms[ sideIndex ];
-
-        for( unsigned int y = 0; y < verticesPerEdge; ++y )
-        for( unsigned int x = 0; x < verticesPerEdge; ++x )
-        {
-            const float fx = 2 * x / float( verticesPerEdge - 1 );
-            const float fy = 2 * y / float( verticesPerEdge - 1 );
-            const auto position = math::Vector3f( -1 + fx, -1 + fy, 1 ).normalized();
-            vertices[ ++lastVertex ] = vertex< VertexType >( transform * math::Vector4f( position.x(), position.y(), position.z(), 1 ) );
-        }
-
-        for( unsigned int y = 0; y < verticesPerEdge - 1; ++y )
-        for( unsigned int x = 0; x < verticesPerEdge - 1; ++x )
-        {
-            const uint16_t ul = x     + y * verticesPerEdge;         // upper left
-            const uint16_t ur = x + 1 + y * verticesPerEdge;         // upper right
-            const uint16_t ll = x     + ( y + 1 ) * verticesPerEdge; // lower left
-            const uint16_t lr = x + 1 + ( y + 1 ) * verticesPerEdge; // lower right
-            
-            indices[ ++lastIndex ] = verticesPerSide * sideIndex + ul;
-            indices[ ++lastIndex ] = verticesPerSide * sideIndex + lr;
-            indices[ ++lastIndex ] = verticesPerSide * sideIndex + ll;
-
-            indices[ ++lastIndex ] = verticesPerSide * sideIndex + ul;
-            indices[ ++lastIndex ] = verticesPerSide * sideIndex + ur;
-            indices[ ++lastIndex ] = verticesPerSide * sideIndex + lr;
-        }
-    }
-
-    return MeshInstance::create
-        ( IndexBufferBase::PRIMITIVE_TYPE_TRIANGLES
-        , vertices, verticesCount
-        ,  indices,  indicesCount );
-}
-// <--- createBall
-
 // see: https://pybind11.readthedocs.io/en/stable/advanced/misc.html#generating-documentation-using-sphinx
 
 PYBIND11_MODULE(base, m)
@@ -281,7 +197,7 @@ PYBIND11_MODULE(base, m)
 
     m.def( "create_ball", []( float radius, unsigned int degree )
     {
-        return static_cast< GeometryFeature* >( &createBall< VertexBase >( radius, degree ) );
+        return static_cast< GeometryFeature* >( &MeshFactory< VertexBase >::createBall( radius, degree ) );
     }
     , py::return_value_policy::reference, "radius"_a, "degree"_a = 3 );
 
