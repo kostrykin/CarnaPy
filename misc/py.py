@@ -152,7 +152,7 @@ class SingleFrameContext:
             dots.append(SpatialWrapper(dot))
         return dots
 
-    def material(self, color, shader='unshaded'):
+    def material(self, color, shader='solid'):
         material = carna.base.Material.create(shader)
         material.set_parameter4f('color', color)
         self._materials.append(material)

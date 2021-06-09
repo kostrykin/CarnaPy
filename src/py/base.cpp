@@ -185,19 +185,19 @@ PYBIND11_MODULE(base, m)
 
     m.def( "create_box", []( float width, float height, float depth )
     {
-        return static_cast< GeometryFeature* >( &MeshFactory< VertexBase >::createBox( width, height, depth ) );
+        return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBox( width, height, depth ) );
     }
     , py::return_value_policy::reference, "width"_a, "height"_a, "depth"_a );
 
     m.def( "create_point", []()
     {
-        return static_cast< GeometryFeature* >( &MeshFactory< VertexBase >::createPoint() );
+        return static_cast< GeometryFeature* >( &MeshFactory< PVertex >::createPoint() );
     }
     , py::return_value_policy::reference );
 
     m.def( "create_ball", []( float radius, unsigned int degree )
     {
-        return static_cast< GeometryFeature* >( &MeshFactory< VertexBase >::createBall( radius, degree ) );
+        return static_cast< GeometryFeature* >( &MeshFactory< PNVertex >::createBall( radius, degree ) );
     }
     , py::return_value_policy::reference, "radius"_a, "degree"_a = 3 );
 
