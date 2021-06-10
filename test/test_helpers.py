@@ -10,100 +10,105 @@ import scipy.ndimage as ndi
 import faulthandler
 faulthandler.enable()
 
-w = 200
-h = 100
+def test_helpers(VolumeGridClass):
 
-# ============================
-# Scene construction
-# ============================
+    w = 200
+    h = 100
 
-GEOMETRY_TYPE_OPAQUE = 0
-GEOMETRY_TYPE_VOLUME = 1
+    # ============================
+    # Scene construction
+    # ============================
 
-root = base.Node.create()
+    GEOMETRY_TYPE_OPAQUE = 0
+    GEOMETRY_TYPE_VOLUME = 1
 
-cam = base.Camera.create()
-cam.local_transform = base.math.translation4f(0, 0, 250)
-cam.projection = base.math.frustum4f(base.math.deg2rad(90), 1, 10, 2000) @ base.math.scaling4f(1, w/h, 1)
-root.attach_child(cam)
+    root = base.Node.create()
 
-box_size   = 50
-box_offset = math.sqrt(2 * ((box_size / 2) ** 2))
+    cam = base.Camera.create()
+    cam.local_transform = base.math.translation4f(0, 0, 250)
+    cam.projection = base.math.frustum4f(base.math.deg2rad(90), 1, 10, 2000) @ base.math.scaling4f(1, w/h, 1)
+    root.attach_child(cam)
 
-box_mesh  = base.create_box(box_size, box_size, 0)
-material1 = base.Material.create('unshaded')
-material2 = base.Material.create('unshaded')
-material3 = base.Material.create('unshaded')
-material1.set_parameter4f('color', [0, 1, 0, 1])
-material2.set_parameter4f('color', [0, 0, 1, 1])
-material3.set_parameter4f('color', [0, 1, 1, 1])
+    box_size   = 50
+    box_offset = math.sqrt(2 * ((box_size / 2) ** 2))
 
-box1 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
-box1.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
-box1.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material1)
-box1.local_transform = base.math.translation4f(0, +box_offset, 0) @ base.math.rotation4f([0, 0, 1], base.math.deg2rad(45)) # top
-root.attach_child(box1)
+    box_mesh  = base.create_box(box_size, box_size, 0)
+    material1 = base.Material.create('unshaded')
+    material2 = base.Material.create('unshaded')
+    material3 = base.Material.create('unshaded')
+    material1.set_parameter4f('color', [0, 1, 0, 1])
+    material2.set_parameter4f('color', [0, 0, 1, 1])
+    material3.set_parameter4f('color', [0, 1, 1, 1])
 
-box2 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
-box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
-box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material2)
-box2.local_transform = base.math.translation4f(+box_offset, 0, -20) @ base.math.rotation4f([0, 0, 1], base.math.deg2rad(45)) # right
-root.attach_child(box2)
+    box1 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
+    box1.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
+    box1.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material1)
+    box1.local_transform = base.math.translation4f(0, +box_offset, 0) @ base.math.rotation4f([0, 0, 1], base.math.deg2rad(45)) # top
+    root.attach_child(box1)
 
-box3 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
-box3.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
-box3.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material3)
-box3.local_transform = base.math.translation4f(-box_offset, 0, +20) @ base.math.rotation4f([0, 0, 1], base.math.deg2rad(45)) #left
-root.attach_child(box3)
+    box2 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
+    box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
+    box2.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material2)
+    box2.local_transform = base.math.translation4f(+box_offset, 0, -20) @ base.math.rotation4f([0, 0, 1], base.math.deg2rad(45)) # right
+    root.attach_child(box2)
 
-box_mesh .release()
-material1.release()
-material2.release()
-material3.release()
+    box3 = base.Geometry.create(GEOMETRY_TYPE_OPAQUE)
+    box3.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, box_mesh)
+    box3.put_feature(presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material3)
+    box3.local_transform = base.math.translation4f(-box_offset, 0, +20) @ base.math.rotation4f([0, 0, 1], base.math.deg2rad(45)) #left
+    root.attach_child(box3)
 
-data = np.ones((100, 100, 100), bool)
-data_center = np.subtract(data.shape, 1) // 2
-data[tuple(data_center)] = False
-data = ndi.distance_transform_edt(data)
-data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
+    box_mesh .release()
+    material1.release()
+    material2.release()
+    material3.release()
 
-grid_helper = helpers.VolumeGrid_UInt16Intensity.create(data.shape)
-grid_helper.load_data(data)
-volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
-root.attach_child(volume)
+    data = np.ones((100, 100, 100), bool)
+    data_center = np.subtract(data.shape, 1) // 2
+    data[tuple(data_center)] = False
+    data = ndi.distance_transform_edt(data)
+    data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
 
-# ============================
-# presets.FrameRendererHelper
-# ============================
+    grid_helper = VolumeGridClass.create(data.shape)
+    grid_helper.load_data(data)
+    volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
+    root.attach_child(volume)
 
-rs_opaque   = presets.OpaqueRenderingStage.create(GEOMETRY_TYPE_OPAQUE)
-rs_occluded = presets.OccludedRenderingStage.create()
-rs_dvr = presets.DVRStage.create(GEOMETRY_TYPE_VOLUME)
-rs_dvr.translucency = 0
-rs_dvr.write_color_map(0.2, 1, [1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 0.2])
+    # ============================
+    # presets.FrameRendererHelper
+    # ============================
 
-ctx = egl.Context.create()
-surface = base.Surface.create(ctx, w, h)
-renderer = base.FrameRenderer.create(ctx, w, h)
+    rs_opaque   = presets.OpaqueRenderingStage.create(GEOMETRY_TYPE_OPAQUE)
+    rs_occluded = presets.OccludedRenderingStage.create()
+    rs_dvr = presets.DVRStage.create(GEOMETRY_TYPE_VOLUME)
+    rs_dvr.translucency = 0
+    rs_dvr.write_color_map(0.2, 1, [1.0, 0.0, 0.0, 0.0], [1.0, 1.0, 0.0, 0.2])
 
-renderer_helper = helpers.FrameRendererHelper(renderer)
-renderer_helper.add_stage(rs_dvr)
-renderer_helper.add_stage(rs_opaque)
-renderer_helper.add_stage(rs_occluded)
-renderer_helper.commit()
+    ctx = egl.Context.create()
+    surface = base.Surface.create(ctx, w, h)
+    renderer = base.FrameRenderer.create(ctx, w, h)
 
-surface.begin()
-renderer.render(cam)
-result = surface.end()
-test_tools.assert_rendering('helpers.FrameRendererHelper', result)
+    renderer_helper = helpers.FrameRendererHelper(renderer)
+    renderer_helper.add_stage(rs_dvr)
+    renderer_helper.add_stage(rs_opaque)
+    renderer_helper.add_stage(rs_occluded)
+    renderer_helper.commit()
 
-# ============================
-# Clean up
-# ============================
+    surface.begin()
+    renderer.render(cam)
+    result = surface.end()
+    test_tools.assert_rendering('helpers.FrameRendererHelper', result)
 
-grid_helper.free()
-root.free()
-surface.free()
-renderer.free()
-ctx.free()
+    # ============================
+    # Clean up
+    # ============================
+
+    grid_helper.free()
+    root.free()
+    surface.free()
+    renderer.free()
+    ctx.free()
+
+test_helpers(helpers.VolumeGrid_UInt16Intensity)
+test_helpers(helpers.VolumeGrid_UInt8Intensity)
 

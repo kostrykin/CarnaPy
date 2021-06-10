@@ -5,6 +5,7 @@ namespace py = pybind11;
 
 using namespace pybind11::literals; // enables the _a literal
 
+#include <Carna/base/glew.h>
 #include <Carna/base/Color.h>
 #include <Carna/base/Geometry.h>
 #include <Carna/base/BufferedIntensityVolume.h>
@@ -15,6 +16,12 @@ using namespace pybind11::literals; // enables the _a literal
 
 using namespace Carna::base;
 using namespace Carna::helpers;
+
+
+
+// ----------------------------------------------------------------------------------
+// defineVolumeGridHelper
+// ----------------------------------------------------------------------------------
 
 template< typename VolumeGridHelperType, typename Module >
 void defineVolumeGridHelper( Module& m, const char* name )
@@ -40,6 +47,12 @@ void defineVolumeGridHelper( Module& m, const char* name )
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )
         .DEF_FREE( VolumeGridHelperType );
 }
+
+
+
+// ----------------------------------------------------------------------------------
+// PYBIND11_MODULE: helpers
+// ----------------------------------------------------------------------------------
 
 PYBIND11_MODULE(helpers, m)
 {
@@ -82,6 +95,9 @@ PYBIND11_MODULE(helpers, m)
 
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16 > >( m, "VolumeGrid_UInt16Intensity" );
     defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16, NormalMap3DInt8 > >( m, "VolumeGrid_UInt16Intensity_Int8Normal" );
+
+    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8 > >( m, "VolumeGrid_UInt8Intensity" );
+    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt8, NormalMap3DInt8 > >( m, "VolumeGrid_UInt8Intensity_Int8Normal" );
 
     py::class_< FrameRendererHelper< > >( m, "FrameRendererHelper" )
         .def( py::init< RenderStageSequence& >() )

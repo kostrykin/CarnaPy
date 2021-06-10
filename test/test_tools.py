@@ -21,13 +21,14 @@ def get_expected_rendering(name):
     assert expected_img_path.is_file(), expected_img_path
     return expected_img_path
 
-def assert_rendering(name, result):
+def assert_rendering(name, result, max_uint8_rms=0.5):
     try:
         expected_img_path = get_expected_rendering(name)
         expected_img = (plt.imread(expected_img_path)[:, :, :3] * 255).round().astype(np.uint8)
         assert result.shape == expected_img.shape, f'Expected shape {expected_img.shape} but found {result.shape}'
         assert result.dtype == expected_img.dtype, f'Expected dtype {expected_img.dtype} but dtype {result.dtype}'
-        assert np.allclose(expected_img, result), np.linalg.norm(result - expected_img)
+        rms_error = np.sqrt(((expected_img - result) ** 2).mean())
+        assert rms_error < max_uint8_rms, f'RMS error in 8bit representation: {rms_error}'
     except:
         output_path = f'/tmp/{name}.png'
         print(f'{Color.BOLD}{Color.RED}Test failed: {name}{Color.END}')
