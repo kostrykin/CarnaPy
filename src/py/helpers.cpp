@@ -7,7 +7,7 @@ using namespace pybind11::literals; // enables the _a literal
 
 #include <Carna/base/Color.h>
 #include <Carna/base/Geometry.h>
-#include <Carna/base/BufferedHUVolume.h>
+#include <Carna/base/BufferedIntensityVolume.h>
 #include <Carna/helpers/FrameRendererHelper.h>
 #include <Carna/helpers/PointMarkerHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
@@ -28,11 +28,11 @@ void defineVolumeGridHelper( Module& m, const char* name )
         .def( "load_data", []( VolumeGridHelperType* self, py::array_t< double > data )
         {
             const auto rawData = data.unchecked< 3 >();
-            const auto voxel2huv = [ &rawData ]( const math::Vector3ui voxel ) -> HUV
+            const auto voxel2intensity = [ &rawData ]( const math::Vector3ui voxel )
             {
-                return Carna::py::float2huv( rawData( voxel.x(), voxel.y(), voxel.z() ) );
+                return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
             };
-            return self->loadData( voxel2huv );
+            return self->loadIntensities( voxel2intensity );
         }
         , "data"_a )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
@@ -80,8 +80,8 @@ PYBIND11_MODULE(helpers, m)
     py::class_< VolumeGridHelperBase::Dimensions >( m, "Dimensions" )
         .def( py::init< const math::Vector3f& >() );
 
-    defineVolumeGridHelper< VolumeGridHelper< HUVolumeUInt16 > >( m, "VolumeGrid_UInt12Intensity" );
-    defineVolumeGridHelper< VolumeGridHelper< HUVolumeUInt16, NormalMap3DInt8 > >( m, "VolumeGrid_UInt12Intensity_Int8Normal" );
+    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16 > >( m, "VolumeGrid_UInt16Intensity" );
+    defineVolumeGridHelper< VolumeGridHelper< IntensityVolumeUInt16, NormalMap3DInt8 > >( m, "VolumeGrid_UInt16Intensity_Int8Normal" );
 
     py::class_< FrameRendererHelper< > >( m, "FrameRendererHelper" )
         .def( py::init< RenderStageSequence& >() )

@@ -20,7 +20,7 @@ root = base.Node.create()
 
 cam = base.Camera.create()
 cam.local_transform = base.math.translation4f(0, 0, 250)
-cam.projection = base.math.frustum4f(base.math.deg2rad(45), 1, 10, 2000) @ base.math.scaling4f(1, w/h, 1)
+cam.projection = base.math.frustum4f(base.math.deg2rad(90), 1, 10, 2000) @ base.math.scaling4f(1, w/h, 1)
 root.attach_child(cam)
 
 box_mesh  = base.create_box(40, 40, 40)
@@ -86,7 +86,7 @@ data = ndi.distance_transform_edt(data)
 data = np.exp(-(data ** 2) / (2 * (25 ** 2)))
 
 root = base.Node.create()
-grid_helper = helpers.VolumeGrid_UInt12Intensity.create(data.shape);
+grid_helper = helpers.VolumeGrid_UInt16Intensity.create(data.shape);
 grid_helper.load_data( data )
 volume = grid_helper.create_node(GEOMETRY_TYPE_VOLUME, helpers.Dimensions([100, 100, 100]))
 root.attach_child(volume)

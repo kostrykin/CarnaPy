@@ -98,7 +98,7 @@ class SingleFrameContext:
         assert (dimensions is None) != (spacing is None)
         if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
         if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
-        grid_helper_type = ('VolumeGrid_UInt12Intensity_Int8Normal' if normals else 'VolumeGrid_UInt12Intensity')
+        grid_helper_type = ('VolumeGrid_UInt16Intensity_Int8Normal' if normals else 'VolumeGrid_UInt16Intensity')
         grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_VOLUME, size_hint)

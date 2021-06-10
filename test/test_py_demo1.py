@@ -28,7 +28,7 @@ boxes = [[ 100, -100, 0], [-100, 100, 0]]
 # Perform rendering
 # ============================
 
-with cpy.SingleFrameContext((100, 200), fov=45, near=1, far=1000) as rc:
+with cpy.SingleFrameContext((100, 200), fov=90, near=1, far=1000) as rc:
     rc.dots(dots, color=(0,1,0,1), size=8)
     green = rc.material((0,1,0,1))
     box = rc.box(20, 20, 20)

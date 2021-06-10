@@ -22,12 +22,10 @@ using namespace Carna::presets;
 
 void CuttingPlanesStage__set_windowing( CuttingPlanesStage* self, float min, float max )
 {
-    const auto huvMin = Carna::py::float2huv( min );
-    const auto huvMax = Carna::py::float2huv( max );
-    const auto huvLevel = (huvMin + huvMax) / 2;
-    const auto huvWidth = (huvMax - huvMin) / 2;
-    self->setWindowingLevel( static_cast< HUV >( huvLevel ) );
-    self->setWindowingWidth( static_cast< unsigned int >( huvWidth ) );
+    const auto level = (min + max) / 2;
+    const auto width =  max - min;
+    self->setWindowingLevel( level );
+    self->setWindowingWidth( width );
 }
 
 PYBIND11_MODULE(presets, m)
@@ -62,13 +60,11 @@ PYBIND11_MODULE(presets, m)
     const static auto MIPLayer__LAYER_FUNCTION_REPLACE = ([](){ return MIPLayer::LAYER_FUNCTION_REPLACE; })();
 
     py::class_< MIPLayer >( m, "MIPLayer" )
-        .def_static( "create", []( float min, float max, const math::Vector4f& color, bool maxExclusive, const BlendFunction& function )
+        .def_static( "create", []( float min, float max, const math::Vector4f& color, const BlendFunction& function )
         {
-            const HUV huFirst = Carna::py::float2huv( min );
-            const HUV huLast  = Carna::py::float2huv( max );
-            return new MIPLayer( huFirst, huLast + (maxExclusive && huLast > huFirst ? -1 : 0), color, function );
+            return new MIPLayer( min, max, color, function );
         }
-        , py::return_value_policy::reference, "min"_a, "max"_a, "color"_a, "maxExclusive"_a = false, "function"_a = MIPLayer__LAYER_FUNCTION_REPLACE )
+        , py::return_value_policy::reference, "min"_a, "max"_a, "color"_a, "function"_a = MIPLayer__LAYER_FUNCTION_REPLACE )
         .def_readonly_static( "LAYER_FUNCTION_ADD", &MIPLayer__LAYER_FUNCTION_ADD )
         .def_readonly_static( "LAYER_FUNCTION_REPLACE", &MIPLayer__LAYER_FUNCTION_REPLACE )
         .DEF_FREE( MIPLayer );
@@ -79,7 +75,7 @@ PYBIND11_MODULE(presets, m)
             return new MIPStage( geometryType );
         }
         , py::return_value_policy::reference, "geometryType"_a )
-        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return MIPStage::ROLE_HU_VOLUME; } )
+        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return MIPStage::ROLE_INTENSITY_VOLUME; } )
         .def( "ascend_layer", &MIPStage::ascendLayer )
         .def( "append_layer", &MIPStage::appendLayer )
         .def( "remove_layer", &MIPStage::removeLayer )
@@ -95,15 +91,9 @@ PYBIND11_MODULE(presets, m)
             return cps;
         }
         , py::return_value_policy::reference, "volumeGeometryType"_a, "planeGeometryType"_a )
-        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return CuttingPlanesStage::ROLE_HU_VOLUME; } )
-        .def_property_readonly( "min_intensity", []( const CuttingPlanesStage* self )
-        {
-            return Carna::py::huv2float( self->minimumHUV() );
-        } )
-        .def_property_readonly( "max_intensity", []( const CuttingPlanesStage* self )
-        {
-            return Carna::py::huv2float( self->maximumHUV() );
-        } )
+        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return CuttingPlanesStage::ROLE_INTENSITY_VOLUME; } )
+        .def_property_readonly( "min_intensity", &CuttingPlanesStage::minimumIntensity )
+        .def_property_readonly( "max_intensity", &CuttingPlanesStage::maximumIntensity )
         .def( "set_windowing", &CuttingPlanesStage__set_windowing )
         .def_property( "rendering_inverse", &CuttingPlanesStage::isRenderingInverse, &CuttingPlanesStage::setRenderingInverse );
 
@@ -115,18 +105,16 @@ PYBIND11_MODULE(presets, m)
         , py::return_value_policy::reference, "geometryType"_a )
         .def_property_readonly_static( "DEFAULT_TRANSLUCENCY", []( py::object ) { return DVRStage::DEFAULT_TRANSLUCENCE; } )
         .def_property_readonly_static( "DEFAULT_DIFFUSE_LIGHT", []( py::object ) { return DVRStage::DEFAULT_DIFFUSE_LIGHT; } )
-        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return DVRStage::ROLE_HU_VOLUME; } )
+        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return DVRStage::ROLE_INTENSITY_VOLUME; } )
         .def_property_readonly_static( "ROLE_NORMALS", []( py::object ) { return DVRStage::ROLE_NORMALS; } )
         .def_property( "translucency", &DVRStage::translucence, &DVRStage::setTranslucence )
         .def_property( "diffuse_light", &DVRStage::diffuseLight, &DVRStage::setDiffuseLight )
         .def( "clear_color_map", &DVRStage::clearColorMap )
-        .def( "write_color_map", []( DVRStage* self, float min, float max, const math::Vector4f& color1, const math::Vector4f& color2, bool maxExclusive )
+        .def( "write_color_map", []( DVRStage* self, float min, float max, const math::Vector4f& color1, const math::Vector4f& color2 )
         {
-            const HUV huFirst = Carna::py::float2huv( min );
-            const HUV huLast  = Carna::py::float2huv( max );
-            self->writeColorMap( huFirst, huLast + ( maxExclusive && huLast > huFirst ? -1 : 0 ), color1, color2 );
+            self->writeColorMap( min, max, color1, color2 );
         }
-        , "min"_a, "max"_a, "color1"_a, "color2"_a, "maxExclusive"_a = false );
+        , "min"_a, "max"_a, "color1"_a, "color2"_a );
 
 }
 

@@ -33,7 +33,7 @@ poi_list = [[ 50, -30, 5], [-100, 100, 0]]
 # Perform rendering
 # ============================
 
-with cpy.SingleFrameContext((512, 512), fov=45, near=1, far=1000) as rc:
+with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     green = rc.material((0,1,0,1))
     box = rc.box(20, 20, 20)
     rc.meshes(box, green, poi_list)
