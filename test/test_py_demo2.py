@@ -37,7 +37,7 @@ with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     green = rc.material((0,1,0,1))
     box = rc.box(20, 20, 20)
     rc.meshes(box, green, poi_list)
-    rc.volume(data, spacing=(1, 1, 1), normals=True)
+    rc.volume(data, spacing=(1, 1, 1), normals=True, fmt_hint=np.uint16)
     rc.dvr(diffuse_light=1, sample_rate=500)
     rc.camera.rotate((1.5, 1, 0), 25, 'deg').translate(10, -25, 130).rotate((0, 0, 1), 35, 'deg')
 

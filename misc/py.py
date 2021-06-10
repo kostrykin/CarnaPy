@@ -5,6 +5,7 @@ import carna.egl
 import carna.presets
 import carna.helpers
 import numpy as np
+import warnings
 
 
 version    = carna.version
@@ -37,6 +38,18 @@ class SpatialWrapper:
     def scale(self, *args):
         self._.local_transform = self._.local_transform @ carna.base.math.scaling4f(*args)
         return self
+
+
+def deduce_volume_format(dtype, dtype_fallback='float16'):
+    dtype = str(np.dtype(dtype))
+    if dtype in ('float32', 'float64'):
+        warnings.warn(f'Unsupported data type: {dtype} (will be treated as {dtype_fallback})')
+        dtype = dtype_fallback
+    return {
+        'uint8'  : 'VolumeGrid_UInt8Intensity',
+        'uint16' : 'VolumeGrid_UInt16Intensity',
+        'float16': 'VolumeGrid_UInt16Intensity',
+    }[dtype]
 
 
 class SingleFrameContext:
@@ -94,11 +107,12 @@ class SingleFrameContext:
     def camera(self):
         return SpatialWrapper(self._camera)
 
-    def volume(self, data, dimensions=None, spacing=None, normals=False):
+    def volume(self, data, dimensions=None, spacing=None, normals=False, fmt_hint=None):
         assert (dimensions is None) != (spacing is None)
         if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
         if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
-        grid_helper_type = ('VolumeGrid_UInt16Intensity_Int8Normal' if normals else 'VolumeGrid_UInt16Intensity')
+        grid_helper_type = deduce_volume_format(data.dtype if fmt_hint is None else fmt_hint)
+        if normals: grid_helper_type += '_Int8Normal'
         grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_VOLUME, size_hint)

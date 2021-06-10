@@ -34,7 +34,7 @@ with cpy.SingleFrameContext((100, 200), fov=90, near=1, far=1000) as rc:
     box = rc.box(20, 20, 20)
     for loc in boxes:
         rc.mesh(box, green).translate(*loc)
-    rc.volume(data, dimensions=(100, 100, 100))
+    rc.volume(data, dimensions=(100, 100, 100), fmt_hint=np.uint8)
     rc.mip()
     rc.camera.translate(0, 0, 250)
 

@@ -8,6 +8,7 @@ set(TEST_FILES
     test_base
     test_presets
     test_helpers
+    test_py
     test_py_demo1
     test_py_demo2
 )
