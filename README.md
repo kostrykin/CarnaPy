@@ -20,7 +20,7 @@ See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 ---
 ## 1. Limitations
 
-* Only 12bit volume data is supported at the moment. Extension to 16bit or beyond should be straight-forward.
+* Only 8bit and 16bit volume data are supported at the moment.
 * DRR renderings are not exposed to Python yet.
 * Build process is currently limited to Linux-based systems.
 
