@@ -15,6 +15,7 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/presets/MIPStage.h>
 #include <Carna/presets/OccludedRenderingStage.h>
 #include <Carna/presets/OpaqueRenderingStage.h>
+#include <Carna/presets/MaskRenderingStage.h>
 #include <Carna/py/py.h>
 
 using namespace Carna::base;
@@ -75,7 +76,7 @@ PYBIND11_MODULE(presets, m)
             return new MIPStage( geometryType );
         }
         , py::return_value_policy::reference, "geometryType"_a )
-        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return MIPStage::ROLE_INTENSITY_VOLUME; } )
+        .def_property_readonly_static( "ROLE_INTENSITIES", []( py::object ) { return MIPStage::ROLE_INTENSITIES; } )
         .def( "ascend_layer", &MIPStage::ascendLayer )
         .def( "append_layer", &MIPStage::appendLayer )
         .def( "remove_layer", &MIPStage::removeLayer )
@@ -91,7 +92,7 @@ PYBIND11_MODULE(presets, m)
             return cps;
         }
         , py::return_value_policy::reference, "volumeGeometryType"_a, "planeGeometryType"_a )
-        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return CuttingPlanesStage::ROLE_INTENSITY_VOLUME; } )
+        .def_property_readonly_static( "ROLE_INTENSITIES", []( py::object ) { return CuttingPlanesStage::ROLE_INTENSITIES; } )
         .def_property_readonly( "min_intensity", &CuttingPlanesStage::minimumIntensity )
         .def_property_readonly( "max_intensity", &CuttingPlanesStage::maximumIntensity )
         .def( "set_windowing", &CuttingPlanesStage__set_windowing )
@@ -105,7 +106,7 @@ PYBIND11_MODULE(presets, m)
         , py::return_value_policy::reference, "geometryType"_a )
         .def_property_readonly_static( "DEFAULT_TRANSLUCENCY", []( py::object ) { return DVRStage::DEFAULT_TRANSLUCENCE; } )
         .def_property_readonly_static( "DEFAULT_DIFFUSE_LIGHT", []( py::object ) { return DVRStage::DEFAULT_DIFFUSE_LIGHT; } )
-        .def_property_readonly_static( "ROLE_VOLUME", []( py::object ) { return DVRStage::ROLE_INTENSITY_VOLUME; } )
+        .def_property_readonly_static( "ROLE_INTENSITIES", []( py::object ) { return DVRStage::ROLE_INTENSITIES; } )
         .def_property_readonly_static( "ROLE_NORMALS", []( py::object ) { return DVRStage::ROLE_NORMALS; } )
         .def_property( "translucency", &DVRStage::translucence, &DVRStage::setTranslucence )
         .def_property( "diffuse_light", &DVRStage::diffuseLight, &DVRStage::setDiffuseLight )
@@ -115,6 +116,30 @@ PYBIND11_MODULE(presets, m)
             self->writeColorMap( min, max, color1, color2 );
         }
         , "min"_a, "max"_a, "color1"_a, "color2"_a );
+
+    py::class_< MaskRenderingStage, VolumeRenderingStage >( m, "MaskRenderingStage" )
+        .def_static( "create", []( unsigned int geometryType, unsigned int maskRole )
+        {
+            MaskRenderingStage* const mr = new MaskRenderingStage( geometryType, maskRole );
+            mr->setRenderBorders( true );
+            return mr;
+        }
+        , py::return_value_policy::reference, "geometryType"_a, "maskRole"_a = MaskRenderingStage::DEFAULT_ROLE_MASK )
+        .def_readonly( "mask_role", &MaskRenderingStage::maskRole )
+        .def_property_readonly_static( "DEFAULT_COLOR", []( py::object ) { return MaskRenderingStage::DEFAULT_COLOR; } )
+        .def_property_readonly_static( "DEFAULT_ROLE_MASK", []( py::object ) { return MaskRenderingStage::DEFAULT_ROLE_MASK; } )
+        .def_property
+            ( "color"
+            , []( MaskRenderingStage* self ) -> math::Vector4f
+                {
+                    return self->color();
+                }
+            , []( MaskRenderingStage* self, const math::Vector4f& color )
+                {
+                    self->setColor( color );
+                }
+            )
+        .def_property( "render_borders", &MaskRenderingStage::renderBorders, &MaskRenderingStage::setRenderBorders );
 
 }
 

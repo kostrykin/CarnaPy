@@ -52,11 +52,26 @@ def deduce_volume_format(dtype, dtype_fallback='float16'):
     }[dtype]
 
 
+def preprocess_mask_data(data):
+    dtype = str(np.dtype(data.dtype))
+    if dtype == 'bool': return 'VolumeGrid_UInt8Intensity', data
+    if (dtype.startswith('int') or dtype.startswith('uint')):
+        if data.max() < (1 << 8):
+            return 'VolumeGrid_UInt8Intensity', (data / data.max()).clip(0, 1)
+        if data.max() < (1 << 16):
+            return 'VolumeGrid_UInt16Intensity', (data / data.max()).clip(0, 1)
+    if dtype.startswith('float'):
+        return 'VolumeGrid_UInt16Intensity', (data / data.max()).clip(0, 1)
+    else:
+        raise ValueError(f'Unsupported mask format')
+
+
 class SingleFrameContext:
 
     GEOMETRY_TYPE_OPAQUE = 0
     GEOMETRY_TYPE_VOLUME = 1
     GEOMETRY_TYPE_PLANE  = 2
+    GEOMETRY_TYPE_MASK   = 3
 
     def __init__(self, shape, fov, near, far):
         self.result = None
@@ -66,16 +81,17 @@ class SingleFrameContext:
         self.far    = far
 
     def __enter__(self):
-        self. result    = None
-        self._camera    = carna.base.Camera.create()
-        self._renderer  = carna.base.FrameRenderer.create(ctx, self.shape[1], self.shape[0])
-        self._helper    = carna.helpers.FrameRendererHelper(self._renderer)
-        self._points    = None
-        self._root      = carna.base.Node.create()
-        self._stages    = dict()
-        self._grids     = []
-        self._meshes    = []
-        self._materials = []
+        self. result       = None
+        self._camera       = carna.base.Camera.create()
+        self._renderer     = carna.base.FrameRenderer.create(ctx, self.shape[1], self.shape[0])
+        self._helper       = carna.helpers.FrameRendererHelper(self._renderer)
+        self._extra_stages = {}
+        self._points       = None
+        self._root         = carna.base.Node.create()
+        self._stages       = dict()
+        self._grids        = []
+        self._meshes       = []
+        self._materials    = []
         self._camera.projection = carna.base.math.frustum4f(carna.base.math.deg2rad(self.fov), self.shape[0] / self.shape[1], self.near, self.far)
         self._root.attach_child(self._camera)
         return self
@@ -84,7 +100,8 @@ class SingleFrameContext:
         if stage_type not in self._stages:
             stage = stage_type.create(*create_args)
             self._stages[stage_type] = stage
-            self._helper.add_stage(stage)
+            if stage_type is not carna.presets.MaskRenderingStage:
+                self._helper.add_stage(stage)
         return self._stages[stage_type]
 
     def _render(self):
@@ -93,8 +110,16 @@ class SingleFrameContext:
         self._renderer.render(self._camera)
         return surface.end()
 
+    def _append_extra_render_stages(self, current_render_time):
+        assert current_render_time in ('before', 'after')
+        for stage, scheduled_render_time in self._extra_stages.items():
+            if scheduled_render_time == current_render_time:
+                self._renderer.append_stage(stage)
+
     def __exit__(self, ex_type, ex_value, ex_traceback):
-        self._helper.commit(True)
+        self._append_extra_render_stages('before')
+        self._helper.commit(False)
+        self._append_extra_render_stages('after')
         self.result = self._render()
         for material in self._materials: material.release()
         for mesh in self._meshes: mesh.release()
@@ -116,6 +141,42 @@ class SingleFrameContext:
         grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_VOLUME, size_hint)
+        self._root.attach_child(volume)
+        self._grids.append(grid)
+        return SpatialWrapper(volume)
+
+    def masks(self, flavor='default', **kwargs):
+        """Configures the mask rendering stage.
+        """
+        assert flavor in ('regions', 'regions-on-top', 'borders-on-top', 'borders-in-background')
+        mr = self._get_stage(carna.presets.MaskRenderingStage, SingleFrameContext.GEOMETRY_TYPE_MASK)
+        for key, val in kwargs.items():
+            setattr(mr, key, val)
+        if flavor == 'default' and mr not in self._extra_stages: flavor = 'regions'
+        if flavor == 'regions':
+            render_time       = 'before'
+            mr.render_borders =  False
+        if flavor == 'regions-on-top':
+            render_time       = 'after'
+            mr.render_borders =  False
+        if flavor == 'borders-on-top':
+            render_time       = 'after'
+            mr.render_borders =  True
+        if flavor == 'borders-in-background':
+            render_time       = 'before'
+            mr.render_borders =  True
+        self._extra_stages[mr] = render_time
+        return mr
+
+    def mask(self, data, *args, dimensions=None, spacing=None, **kwargs):
+        self.masks(*args, **kwargs) ## require mask rendering stage
+        assert (dimensions is None) != (spacing is None)
+        if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
+        if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
+        grid_helper_type, data = preprocess_mask_data(data)
+        grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
+        grid.load_data(data)
+        volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_MASK, size_hint)
         self._root.attach_child(volume)
         self._grids.append(grid)
         return SpatialWrapper(volume)

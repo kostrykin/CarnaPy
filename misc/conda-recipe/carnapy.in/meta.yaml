@@ -43,7 +43,7 @@ about:
   license: BSD
   license_family: BSD
   license_file: 
-  summary: "General-purpose real-time 3D visualization"
+  summary: "Real-time 3D visualization for biomedical data and beyond"
   doc_url: 
   dev_url: "https://github.com/kostrykin/CarnaPy"
 

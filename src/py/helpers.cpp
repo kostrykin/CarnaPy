@@ -13,6 +13,7 @@ using namespace pybind11::literals; // enables the _a literal
 #include <Carna/helpers/PointMarkerHelper.h>
 #include <Carna/helpers/VolumeGridHelper.h>
 #include <Carna/py/py.h>
+#include <iostream> //debug
 
 using namespace Carna::base;
 using namespace Carna::helpers;
@@ -26,22 +27,26 @@ using namespace Carna::helpers;
 template< typename VolumeGridHelperType, typename Module >
 void defineVolumeGridHelper( Module& m, const char* name )
 {
-    py::class_< VolumeGridHelperType >( m, name )
+    auto cl = py::class_< VolumeGridHelperType >( m, name )
         .def_static( "create", []( const math::Vector3ui& nativeResolution, std::size_t maxSegmentBytesize )
         {
             return new VolumeGridHelperType( nativeResolution, maxSegmentBytesize );
         }
         , py::return_value_policy::reference, "nativeResolution"_a, "maxSegmentBytesize"_a = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })() )
-        .def( "load_data", []( VolumeGridHelperType* self, py::array_t< double > data )
+        .def( "load_data", []( VolumeGridHelperType* self, py::array_t< double > data, bool test )
         {
             const auto rawData = data.unchecked< 3 >();
-            const auto voxel2intensity = [ &rawData ]( const math::Vector3ui voxel )
+            const auto voxel2intensity = [ &rawData, test ]( const math::Vector3ui voxel )
             {
-                return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
+                if (test) {
+                    return 0.f;
+                }
+                else return static_cast< float >( rawData( voxel.x(), voxel.y(), voxel.z() ) );
             };
             return self->loadIntensities( voxel2intensity );
         }
-        , "data"_a )
+        , "data"_a, "test"_a = false )
+        .def_property( "intensities_role", &VolumeGridHelperType::intensitiesRole, &VolumeGridHelperType::setIntensitiesRole )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Spacing& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "create_node", py::overload_cast< unsigned int, const VolumeGridHelperBase::Dimensions& >( &VolumeGridHelperType::createNode, py::const_ ), py::return_value_policy::reference )
         .def( "release_geometry_features", &VolumeGridHelperType::releaseGeometryFeatures )

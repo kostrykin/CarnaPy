@@ -11,6 +11,7 @@ set(TEST_FILES
     test_py
     test_py_demo1
     test_py_demo2
+    test_py_demo3
 )
 
 configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/test_tools.py

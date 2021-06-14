@@ -136,9 +136,37 @@ result = surface.end()
 test_tools.assert_rendering('presets.DVRStage', result)
 
 # ============================
+# presets.MaskRenderingStage
+# ============================
+
+GEOMETRY_TYPE_MASK = 3
+
+mr = presets.MaskRenderingStage.create(GEOMETRY_TYPE_MASK)
+renderer.clear_stages()
+renderer.append_stage(mr)
+
+mask_grid_helper = helpers.VolumeGrid_UInt8Intensity.create(data.shape);
+mask_grid_helper.load_data( data > 0.5 )
+mask = mask_grid_helper.create_node(GEOMETRY_TYPE_MASK, helpers.Dimensions([100, 100, 100]))
+root.attach_child(mask)
+
+surface.begin()
+renderer.render(cam)
+result = surface.end()
+test_tools.assert_rendering('presets.MaskRenderingStage', result)
+
+mr.render_borders = True
+surface.begin()
+renderer.render(cam)
+result = surface.end()
+test_tools.assert_rendering('presets.MaskRenderingStage.render_borders', result)
+
+# ============================
 # Clean up
 # ============================
 
+renderer.free()
+mask_grid_helper.free()
 grid_helper.free()
 root.free()
 surface.free()
