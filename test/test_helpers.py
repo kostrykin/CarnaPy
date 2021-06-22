@@ -10,7 +10,7 @@ import scipy.ndimage as ndi
 import faulthandler
 faulthandler.enable()
 
-def test_helpers(VolumeGridClass):
+def test_helpers(VolumeGridClass, result_suffix):
 
     w = 200
     h = 100
@@ -97,7 +97,7 @@ def test_helpers(VolumeGridClass):
     surface.begin()
     renderer.render(cam)
     result = surface.end()
-    test_tools.assert_rendering('helpers.FrameRendererHelper', result)
+    test_tools.assert_rendering(f'helpers.FrameRendererHelper.{result_suffix}', result)
 
     # ============================
     # Clean up
@@ -109,6 +109,6 @@ def test_helpers(VolumeGridClass):
     renderer.free()
     ctx.free()
 
-test_helpers(helpers.VolumeGrid_UInt16Intensity)
-test_helpers(helpers.VolumeGrid_UInt8Intensity)
+test_helpers(helpers.VolumeGrid_UInt16Intensity, 'uint16')
+test_helpers(helpers.VolumeGrid_UInt8Intensity , 'uint8' )
 

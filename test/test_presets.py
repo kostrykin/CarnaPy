@@ -150,6 +150,7 @@ mask_grid_helper.load_data( data > 0.5 )
 mask = mask_grid_helper.create_node(GEOMETRY_TYPE_MASK, helpers.Dimensions([100, 100, 100]))
 root.attach_child(mask)
 
+mr.render_borders = False
 surface.begin()
 renderer.render(cam)
 result = surface.end()

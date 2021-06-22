@@ -39,7 +39,7 @@ with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     rc.meshes(box, green, poi_list)
     rc.volume(data, spacing=(1, 1, 1), normals=True, fmt_hint=np.uint16)
     rc.dvr(diffuse_light=1, sample_rate=500)
-    rc.camera.rotate((1.5, 1, 0), 25, 'deg').translate(10, -25, 130).rotate((0, 0, 1), 35, 'deg')
+    rc.camera.rotate((1.5, 1, 0), 45, 'deg').translate(10, -25, 160).rotate((0, 0, 1), 35, 'deg')
 
 test_tools.assert_rendering('py.demo2', rc.result)
 

@@ -31,6 +31,7 @@ class SpatialWrapper:
 
     def rotate(self, axis, amount, units='rad'):
         assert units in ('rad', 'deg')
+        axis = axis / np.linalg.norm(axis)
         if units == 'deg': amount = carna.base.math.deg2rad(amount)
         self._.local_transform = self._.local_transform @ carna.base.math.rotation4f(axis, amount)
         return self
@@ -38,6 +39,30 @@ class SpatialWrapper:
     def scale(self, *args):
         self._.local_transform = self._.local_transform @ carna.base.math.scaling4f(*args)
         return self
+
+
+class VolumeWrapper(SpatialWrapper):
+    def __init__(self, volume, data_shape, dimensions=None, spacing=None):
+        assert (dimensions is None) != (spacing is None)
+        super().__init__(volume)
+        if dimensions is None: dimensions = spacing * (np.array(data_shape) - 1)[None, :]
+        self.dimensions = dimensions
+        self.data_shape = data_shape
+
+    def map_normalized_coordinates(self, coordinates):
+        """Maps normalized coordinates to volume coordinates.
+        """
+        coordinates = np.asarray(coordinates)
+        assert coordinates.ndim == 2 and coordinates.shape[1] == 3
+        return (coordinates - 0.5) * self.dimensions
+
+    def map_voxel_coordinates(self, coordinates):
+        """Maps voxel coordinates to volume coordinates.
+        """
+        coordinates = np.asarray(coordinates)
+        assert coordinates.ndim == 2 and coordinates.shape[1] == 3
+        coordinates = coordinates / np.subtract(self.data_shape, 1)[None, :]
+        return self.map_normalized_coordinates(coordinates)
 
 
 def deduce_volume_format(dtype, dtype_fallback='float16'):
@@ -73,12 +98,17 @@ class SingleFrameContext:
     GEOMETRY_TYPE_PLANE  = 2
     GEOMETRY_TYPE_MASK   = 3
 
-    def __init__(self, shape, fov, near, far):
+    def __init__(self, shape, near, far, fov=None, ortho=None,
+            max_segment_bytesize=carna.helpers.VolumeGridHelperBase.DEFAULT_MAX_SEGMENT_BYTESIZE):
+        assert (fov is None) != (ortho is None), f'Either "fov" or "ortho" musst be supplied (fov={fov}, ortho={ortho})'
+        assert ortho is None or (isinstance(ortho, tuple) and len(ortho) == 4), str(ortho)
         self.result = None
         self.shape  = shape
-        self.fov    = fov
         self.near   = near
         self.far    = far
+        self.fov    = fov
+        self.ortho  = ortho
+        self.max_segment_bytesize = max_segment_bytesize
 
     def __enter__(self):
         self. result       = None
@@ -92,7 +122,10 @@ class SingleFrameContext:
         self._grids        = []
         self._meshes       = []
         self._materials    = []
-        self._camera.projection = carna.base.math.frustum4f(carna.base.math.deg2rad(self.fov), self.shape[0] / self.shape[1], self.near, self.far)
+        if self.fov is not None:
+            self._camera.projection = carna.base.math.frustum4f(carna.base.math.deg2rad(self.fov), self.shape[0] / self.shape[1], self.near, self.far)
+        else:
+            self._camera.projection = carna.base.math.ortho4f(*self.ortho, self.near, self.far)
         self._root.attach_child(self._camera)
         return self
 
@@ -132,18 +165,26 @@ class SingleFrameContext:
     def camera(self):
         return SpatialWrapper(self._camera)
 
-    def volume(self, data, dimensions=None, spacing=None, normals=False, fmt_hint=None):
+    def _get_parent(self, parent):
+        if isinstance(parent, str) and parent == 'root': return self._root
+        elif isinstance(parent, SpatialWrapper): return parent._
+        else: raise ValueError('parent must be either "root" or SpatialWrapper instance')
+
+    def volume(self, data, dimensions=None, spacing=None, normals=False, fmt_hint=None, parent='root'):
+        assert data.ndim == 3
         assert (dimensions is None) != (spacing is None)
         if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
         if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
         grid_helper_type = deduce_volume_format(data.dtype if fmt_hint is None else fmt_hint)
         if normals: grid_helper_type += '_Int8Normal'
-        grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
+        grid = getattr(carna.helpers, grid_helper_type).create(data.shape, self.max_segment_bytesize)
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_VOLUME, size_hint)
-        self._root.attach_child(volume)
+        pivot = carna.base.Node.create()
+        pivot.attach_child(volume)
+        self._get_parent(parent).attach_child(pivot)
         self._grids.append(grid)
-        return SpatialWrapper(volume)
+        return VolumeWrapper(pivot, data.shape, dimensions, spacing)
 
     def masks(self, flavor='default', **kwargs):
         """Configures the mask rendering stage.
@@ -168,24 +209,27 @@ class SingleFrameContext:
         self._extra_stages[mr] = render_time
         return mr
 
-    def mask(self, data, *args, dimensions=None, spacing=None, **kwargs):
-        self.masks(*args, **kwargs) ## require mask rendering stage
+    def mask(self, data, *args, dimensions=None, spacing=None, parent='root', **kwargs):
+        mr = self.masks(*args, **kwargs) ## require mask rendering stage
         assert (dimensions is None) != (spacing is None)
         if dimensions is not None: size_hint = carna.helpers.Dimensions(dimensions)
         if spacing    is not None: size_hint = carna.helpers.Spacing   (spacing)
         grid_helper_type, data = preprocess_mask_data(data)
-        grid = getattr(carna.helpers, grid_helper_type).create(data.shape)
+        grid = getattr(carna.helpers, grid_helper_type).create(data.shape, self.max_segment_bytesize)
+        grid.intensities_role = mr.mask_role
         grid.load_data(data)
         volume = grid.create_node(SingleFrameContext.GEOMETRY_TYPE_MASK, size_hint)
-        self._root.attach_child(volume)
+        pivot = carna.base.Node.create()
+        pivot.attach_child(volume)
+        self._get_parent(parent).attach_child(pivot)
         self._grids.append(grid)
-        return SpatialWrapper(volume)
+        return VolumeWrapper(pivot, data.shape, dimensions, spacing)
 
-    def plane(self, *args):
+    def plane(self, *args, parent='root'):
         self.planes() ## require cutting planes rendering stage
         plane = carna.base.Geometry.create(SingleFrameContext.GEOMETRY_TYPE_PLANE)
         plane.local_transform = carna.base.math.plane4f(*args)
-        self._root.attach_child(plane)
+        self._get_parent(parent).attach_child(plane)
         return SpatialWrapper(plane)
 
     def planes(self):
@@ -216,14 +260,14 @@ class SingleFrameContext:
             setattr(dvr, key, val)
         return dvr
 
-    def dots(self, data, color, size):
+    def dots(self, data, color, size, parent='root'):
         opaque = self.opaque()
         if self._points is None: self._points = carna.helpers.PointMarkerHelper.create(SingleFrameContext.GEOMETRY_TYPE_OPAQUE)
         dots = []
         for location in data:
             dot = self._points.create_point_marker(size, color)
             dot.local_transform = carna.base.math.translation4f(*location)
-            self._root.attach_child(dot)
+            self._get_parent(parent).attach_child(dot)
             dots.append(SpatialWrapper(dot))
         return dots
 
@@ -243,18 +287,18 @@ class SingleFrameContext:
         self._meshes.append(ball)
         return ball
 
-    def mesh(self, mesh, material):
+    def mesh(self, mesh, material, parent='root'):
         self.opaque() ## require opaque rendering stage
         geom = carna.base.Geometry.create(SingleFrameContext.GEOMETRY_TYPE_OPAQUE)
         geom.put_feature(carna.presets.OpaqueRenderingStage.ROLE_DEFAULT_MESH, mesh)
         geom.put_feature(carna.presets.OpaqueRenderingStage.ROLE_DEFAULT_MATERIAL, material)
-        self._root.attach_child(geom)
+        self._get_parent(parent).attach_child(geom)
         return SpatialWrapper(geom)
 
-    def meshes(self, mesh, material, locations):
+    def meshes(self, mesh, material, locations, parent='root'):
         geoms = []
         for loc in locations:
-            geom = self.mesh(mesh, material).translate(*loc)
+            geom = self.mesh(mesh, material, parent=parent).translate(*loc)
             geoms.append(geom)
         return geoms
 

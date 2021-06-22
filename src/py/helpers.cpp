@@ -27,7 +27,7 @@ using namespace Carna::helpers;
 template< typename VolumeGridHelperType, typename Module >
 void defineVolumeGridHelper( Module& m, const char* name )
 {
-    auto cl = py::class_< VolumeGridHelperType >( m, name )
+    auto cl = py::class_< VolumeGridHelperType, VolumeGridHelperBase >( m, name )
         .def_static( "create", []( const math::Vector3ui& nativeResolution, std::size_t maxSegmentBytesize )
         {
             return new VolumeGridHelperType( nativeResolution, maxSegmentBytesize );
@@ -58,6 +58,8 @@ void defineVolumeGridHelper( Module& m, const char* name )
 // ----------------------------------------------------------------------------------
 // PYBIND11_MODULE: helpers
 // ----------------------------------------------------------------------------------
+
+const static auto VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE = ([](){ return VolumeGridHelperBase::DEFAULT_MAX_SEGMENT_BYTESIZE; })();
 
 PYBIND11_MODULE(helpers, m)
 {
@@ -91,6 +93,9 @@ PYBIND11_MODULE(helpers, m)
         .def_readonly( "point_size", &PointMarkerHelper::pointSize )
         .def_static( "reset_default_color", &PointMarkerHelper::resetDefaultColor )
         .DEF_FREE( PointMarkerHelper );
+
+    py::class_< VolumeGridHelperBase >( m, "VolumeGridHelperBase" )
+        .def_readonly_static( "DEFAULT_MAX_SEGMENT_BYTESIZE", &VolumeGridHelperBase__DEFAULT_MAX_SEGMENT_BYTESIZE );
 
     py::class_< VolumeGridHelperBase::Spacing >( m, "Spacing" )
         .def( py::init< const math::Vector3f& >() );
