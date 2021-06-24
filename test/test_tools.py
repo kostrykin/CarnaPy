@@ -60,7 +60,7 @@ class BatchTest:
     def finish(self):
         assert self.success, 'Batch test failed'
 
-def assert_rendering(name, result, max_abs_error=50/255, max_rms_error=1e-3, defer=False, batch=None):
+def assert_rendering(name, result, max_abs_error=2/255, max_abs_error_exceed_count=250, max_rms_error=0.005, defer=False, batch=None):
     if batch is not None: defer = True
     try:
         expected_img_path = get_expected_rendering(name)
@@ -70,8 +70,9 @@ def assert_rendering(name, result, max_abs_error=50/255, max_rms_error=1e-3, def
         result_f = result / 255
         abs_error = np.abs(expected_img - result_f).max()
         rms_error = np.sqrt(((expected_img - result_f) ** 2).mean())
-        hint = f'Abs error: {abs_error:g}, RMS error: {rms_error:g}'
-        assert abs_error <= max_abs_error and rms_error <= max_rms_error, hint
+        abs_error_exceed_count = (np.abs(expected_img - result_f) > max_abs_error).sum()
+        hint = f'Abs error: {abs_error:g}, exceeded: {abs_error_exceed_count} times, RMS error: {rms_error:g}'
+        assert abs_error_exceed_count <= max_abs_error_exceed_count and rms_error <= max_rms_error, hint
         pass_test(name, hint)
         return True
     except Exception as ex:

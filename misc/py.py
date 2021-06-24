@@ -40,6 +40,27 @@ class SpatialWrapper:
         self._.local_transform = self._.local_transform @ carna.base.math.scaling4f(*args)
         return self
 
+    @property
+    def position(self):
+        return self._.local_transform[:3, -1]
+
+    def look(self, direction, up):
+        direction = np.asarray(direction) / np.linalg.norm(direction)
+        left = np.cross(direction, up)
+        left = left / np.linalg.norm(left)
+        up   = np.cross(left, direction)
+        mat  = np.eye(4)
+        mat[:3, 0] = -left
+        mat[:3, 1] =  up
+        mat[:3, 2] =  direction
+        mat[:3, 3] =  self.position
+        self._.local_transform = mat
+        return self
+
+    def look_at(self, point, up):
+        direction = self.position - point
+        return self.look(direction, up)
+
 
 class VolumeWrapper(SpatialWrapper):
     def __init__(self, volume, data_shape, dimensions=None, spacing=None):

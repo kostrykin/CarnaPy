@@ -29,7 +29,7 @@ data   = (data0 + 1e-2 * np.random.randn(*data0.shape)).clip(0, 1) ## add white 
 # Define points of interest
 # =========================================
 
-poi_list = [[ 50, -30, 5], [-100, 100, 0]]
+poi_list = [[ 50, -30, 5], [-100, 100, 10]]
 
 # =========================================
 # Perform rendering (regions)
@@ -40,9 +40,9 @@ with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     box = rc.box(20, 20, 20)
     rc.meshes(box, green, poi_list)
     rc.volume(data, spacing=(1, 1, 1), normals=True, fmt_hint=np.uint16)
-    rc.dvr(diffuse_light=1, sample_rate=500)
+    rc.dvr(diffuse_light=1, sample_rate=1000)
     rc.camera.rotate((1.5, 1, 0), 45, 'deg').translate(10, -25, 160).rotate((0, 0, 1), 35, 'deg')
-    rc.mask(ndi.label(data0 > 0.2)[0], 'regions', spacing=(1, 1, 1), color=(1, 0, 0, 1), sample_rate=500)
+    rc.mask(ndi.label(data0 > 0.2)[0], 'regions', spacing=(1, 1, 1), color=(1, 0, 0, 1), sample_rate=1000)
 
 test_tools.assert_rendering('py.demo3.regions', rc.result, batch=test)
 
@@ -55,9 +55,9 @@ with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     box = rc.box(20, 20, 20)
     rc.meshes(box, green, poi_list)
     rc.volume(data, spacing=(1, 1, 1), normals=True, fmt_hint=np.uint16)
-    rc.dvr(diffuse_light=1, sample_rate=500)
+    rc.dvr(diffuse_light=1, sample_rate=1000)
     rc.camera.rotate((1.5, 1, 0), 45, 'deg').translate(10, -25, 160).rotate((0, 0, 1), 35, 'deg')
-    rc.mask(ndi.label(data0 > 0.2)[0], 'regions-on-top', spacing=(1, 1, 1), color=(1, 0, 0, 1), sample_rate=500)
+    rc.mask(ndi.label(data0 > 0.2)[0], 'regions-on-top', spacing=(1, 1, 1), color=(1, 0, 0, 1), sample_rate=1000)
 
 test_tools.assert_rendering('py.demo3.regions-on-top', rc.result, batch=test)
 
@@ -70,7 +70,7 @@ with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     box = rc.box(20, 20, 20)
     rc.meshes(box, green, poi_list)
     rc.volume(data, spacing=(1, 1, 1), normals=True, fmt_hint=np.uint16)
-    rc.dvr(diffuse_light=1, sample_rate=500)
+    rc.dvr(diffuse_light=1, sample_rate=1000)
     rc.camera.rotate((1.5, 1, 0), 45, 'deg').translate(10, -25, 160).rotate((0, 0, 1), 35, 'deg')
     rc.mask(ndi.label(data0 > 0.2)[0], 'borders-on-top', spacing=(1, 1, 1), color=(1, 0, 0, 1))
 
@@ -85,7 +85,7 @@ with cpy.SingleFrameContext((512, 512), fov=90, near=1, far=1000) as rc:
     box = rc.box(20, 20, 20)
     rc.meshes(box, green, poi_list)
     rc.volume(data, spacing=(1, 1, 1), normals=True, fmt_hint=np.uint16)
-    rc.dvr(diffuse_light=1, sample_rate=500)
+    rc.dvr(diffuse_light=1, sample_rate=1000)
     rc.camera.rotate((1.5, 1, 0), 45, 'deg').translate(10, -25, 160).rotate((0, 0, 1), 35, 'deg')
     rc.mask(ndi.label(data0 > 0.2)[0], 'borders-in-background', spacing=(1, 1, 1), color=(1, 0, 0, 1))
 
