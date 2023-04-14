@@ -5,8 +5,9 @@ The aim of this package is to provide real-time 3D visualization in Python for s
 
 See [examples/kalinin2018.ipynb](examples/kalinin2018.ipynb) for an example.
 
-[![Anaconda-Server Badge](https://anaconda.org/kostrykin/carnapy/badges/version.svg?)](https://anaconda.org/kostrykin/carnapy)
-[![Anaconda-Server Badge](https://anaconda.org/kostrykin/carnapy/badges/platforms.svg?)](https://anaconda.org/kostrykin/carnapy)
+[![Anaconda-Server Badge](https://img.shields.io/badge/Install%20with-conda-%2387c305)](https://anaconda.org/kostrykin/carnapy)
+[![Anaconda-Server Badge](https://img.shields.io/conda/v/kostrykin/carnapy.svg?label=Version)](https://anaconda.org/kostrykin/carnapy)
+[![Anaconda-Server Badge](https://img.shields.io/conda/pn/kostrykin/carnapy.svg?label=Platforms)](https://anaconda.org/kostrykin/carnapy)
 
 ---
 ## Contents
