@@ -23,4 +23,4 @@ sh linux_build-egl.sh
 cd ..
 export CARNAPY_BUILD_TEST="OFF"
 python setup.py build
-python setup.py install
+sudo python setup.py install
