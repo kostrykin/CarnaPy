@@ -56,6 +56,7 @@ if __name__ == '__main__':
                 f'-DPATCH_VERSION={version_patch}',
                 f'-DREQUIRED_VERSION_CARNA={VERSION_CARNA}',
                 f'-DPYTHON_EXECUTABLE={sys.executable}',
+                f'-Dpybind11_DIR="{os.environ["CONDA_PREFIX"]}/share/cmake/pybind11"'
                 f'../..',
             ]
 
