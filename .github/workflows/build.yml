@@ -32,7 +32,7 @@ jobs:
         run: sh build.sh
       - name: Prepare artifact
         run: |
-          mkdir /dist
+          mkdir /tmp/dist
           cp /usr/local/lib/libCarna-*.so /tmp/dist
           rm /tmp/dist/libCarna-*d.so
           cp $(find /home/runner/work -name '*.whl') /tmp/dist/
