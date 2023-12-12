@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Install dependencies:
-sudo apt-get -qq install libegl1-mesa-dev libboost-iostreams-dev
+sudo apt-get install -y libegl1-mesa-dev libboost-iostreams-dev
 conda install -y -c conda-forge pybind11
 
 # Get Eigen sources:
