@@ -23,5 +23,8 @@ jobs:
           auto-update-conda: true
           auto-activate-base: true
       -
+        name: Set environment variables
+        run: echo "CONDA_PREFIX=$CONDA/envs/base" >> $GITHUB_ENV
+      -
         name: Build and install
         run: sh build.sh
