@@ -2,12 +2,12 @@
 set -e
 
 # Install dependencies:
-sudo apt-get install -y libegl1-mesa-dev libboost-iostreams-dev
+sudo apt-get install -y libegl1-mesa-dev libboost-iostreams-dev doxygen
 conda install -y -c conda-forge pybind11
 
 # Get Eigen sources:
 wget https://gitlab.com/libeigen/eigen/-/archive/3.2.10/eigen-3.2.10.tar.gz
-tar -vzxf eigen-3.2.10.tar.gz -C /tmp/
+tar -zxf eigen-3.2.10.tar.gz -C /tmp/
 export CMAKE_PREFIX_PATH="/tmp/eigen-3.2.10:$CMAKE_PREFIX_PATH"
 
 # Build and install Carna

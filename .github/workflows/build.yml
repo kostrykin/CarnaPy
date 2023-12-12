@@ -1,4 +1,4 @@
-name: Build CarnaPy and deploy Docker Image
+name: Build CarnaPy and Docker image
 
 on:
   push:
