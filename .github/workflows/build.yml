@@ -36,4 +36,5 @@ jobs:
           name: dist
           path: |
             /usr/local/lib/libCarna-*.so
+            !/usr/local/lib/libCarna-*d.so
             /home/runner/work/**/CarnaPy/dist/*.whl
