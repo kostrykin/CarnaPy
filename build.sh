@@ -2,7 +2,7 @@
 set -e
 
 # Install dependencies:
-sudo apt-get install -y libegl1-mesa-dev libglu1-mesa-dev libboost-iostreams-dev doxygen
+sudo apt-get install -y libegl1-mesa-dev libglu1-mesa-dev libglew-dev libboost-iostreams-dev doxygen
 conda install -y -c conda-forge pybind11
 
 # Get Eigen sources:
