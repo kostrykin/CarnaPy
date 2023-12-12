@@ -13,7 +13,7 @@ export CMAKE_PREFIX_PATH="/tmp/eigen-3.2.10:$CMAKE_PREFIX_PATH"
 # Build and install Carna
 git clone https://github.com/kostrykin/Carna.git build_carna
 cd build_carna
-sh linux_build.sh
+sh linux_build-egl.sh
 
 # Build and install CarnaPy
 cd ..
