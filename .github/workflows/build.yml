@@ -30,11 +30,18 @@ jobs:
       -
         name: Build and install
         run: sh build.sh
+      - name: Prepare artifact
+        run: |
+          mkdir /dist
+          cp /usr/local/lib/libCarna-*.so /tmp/dist
+          rm /tmp/dist/libCarna-*d.so
+          cp $(find /home/runner/work -name '*.whl') /tmp/dist/
       -
         uses: actions/upload-artifact@v3
         with:
           name: dist
           path: |
-            /usr/local/lib/libCarna-*.so
-            !/usr/local/lib/libCarna-*d.so
-            /home/runner/work/**/CarnaPy/dist/*.whl
+             /tmp/dist
+#            /usr/local/lib/libCarna-*.so
+#            !/usr/local/lib/libCarna-*d.so
+#            /home/runner/work/**/CarnaPy/dist/*.whl
