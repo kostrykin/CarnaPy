@@ -21,5 +21,6 @@ sh linux_build-egl.sh
 
 # Build and install CarnaPy:
 cd ..
+export CARNAPY_BUILD_TEST="OFF"
 python setup.py build
 python setup.py install

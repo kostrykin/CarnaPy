@@ -49,7 +49,7 @@ if __name__ == '__main__':
             version_major, version_minor, version_patch = [int(val) for val in VERSION_CARNA_PY.split('.')]
             get_cmake_args = lambda debug: [
                 f'-DCMAKE_BUILD_TYPE={"Debug" if debug else "Release"}',
-                f'-DBUILD_TEST=ON',
+                f'-DBUILD_TEST={os.environ.get("CARNAPY_BUILD_TEST", "ON")}',
                 f'-DBUILD_DOC={"OFF" if debug else "ON"}',
                 f'-DMAJOR_VERSION={version_major}',
                 f'-DMINOR_VERSION={version_minor}',
