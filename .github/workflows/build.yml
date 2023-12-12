@@ -35,6 +35,5 @@ jobs:
         with:
           name: dist
           path: |
-            /usr/share/miniconda3
             /usr/local/lib/libCarna-*.so
             CarnaPy/dist/*.whl
