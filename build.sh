@@ -19,8 +19,7 @@ git clone https://github.com/kostrykin/Carna.git build_carna
 cd build_carna
 sh linux_build-egl.sh
 
-# Build and install CarnaPy:
+# Build wheel:
 cd ..
 export CARNAPY_BUILD_TEST="OFF"
-python setup.py build
-sudo -E python setup.py install
+python setup.py bdist_wheel
