@@ -71,12 +71,13 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
         name: Setup repository name
+        id: setup_repository_name
         run: |
-          echo "DOCKER_REPOSITORY=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+          echo "docker_repository=${GITHUB_REPOSITORY,,}" >> $GITHUB_OUTPUT
       -
         name: Build and push
         uses: docker/build-push-action@v5
         with:
           file: .github/Dockerfile
           push: true
-          tags: $DOCKER_REPOSITORY:${{ github.ref_name }}
+          tags: ${{ steps.setup_repository_name.outputs.docker_repository }}:${{ github.ref_name }}
