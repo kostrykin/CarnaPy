@@ -58,38 +58,13 @@ Conda packages are available for Python 3.7–3.9.
 ---
 ## 4. Build instructions
 
-Assuming you are using a recent version of Ubuntu:
-
+There is a build script for Ubuntu Linux which builds a wheel file:
 ```bash
-sudo apt-get -qq install libegl1-mesa-dev libboost-iostreams-dev
-```
-
-Create and activate a Conda environment to work in, then:
-
-```bash
-conda install -c conda-forge pybind11
-```
-
-Grab a recent version of [Eigen](http://eigen.tuxfamily.org), unpack it, and tell CMake where it is located:
-
-```bash
-wget https://gitlab.com/libeigen/eigen/-/archive/3.2.10/eigen-3.2.10.tar.gz
-tar -vzxf eigen-3.2.10.tar.gz -C /tmp/
-export CMAKE_PREFIX_PATH="/tmp/eigen-3.2.10:$CMAKE_PREFIX_PATH"
-```
-
-If you have not already, download, build, and install Carna:
-
-```bash
-git clone git@github.com:kostrykin/Carna.git build_carna
-cd build_carna
 sh linux_build.sh
 ```
+Adaption to other distribution should be self-explanatory.
 
-Now it is time to build, package, and install CarnaPy:
+After building the wheel file, it can be installed using:
+```bash
+python -m pip install --force-reinstall $(find . -name 'CarnaPy*.whl')
 ```
-cd ..
-python setup.py build
-python setup.py install
-```
-
