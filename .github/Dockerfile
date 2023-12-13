@@ -11,5 +11,7 @@ COPY CarnaPy-*.whl /tmp/carnapy/
 RUN python -m pip install --force-reinstall /tmp/carnapy/*.whl
 RUN rm -rf /tmp/carnapy
 
+COPY examples/* .
+
 EXPOSE 8890
 CMD ['jupyter', 'lab', '--port', '8890']
