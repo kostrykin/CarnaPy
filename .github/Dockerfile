@@ -13,5 +13,5 @@ RUN rm -rf /tmp/carnapy
 
 COPY examples /data
 
-EXPOSE 8890
-CMD cd /data; jupyter lab --allow-root --debug --port 8890 --no-browser
+EXPOSE 80
+CMD cd /data; jupyter lab --allow-root --port 80 --no-browser --ip='*'
