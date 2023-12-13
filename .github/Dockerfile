@@ -7,7 +7,9 @@ RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir pybind11
 RUN pip install --no-cache-dir jupyterlab
 
-RUN python -m pip install --force-reinstall CarnaPy*.whl
+COPY CarnaPy-*.whl /tmp/carnapy/
+RUN python -m pip install --force-reinstall /tmp/carnapy/*.whl
+RUN rm -rf /tmp/carnapy
 
 EXPOSE 8890
 CMD ['jupyter', 'lab', '--port', '8890']
