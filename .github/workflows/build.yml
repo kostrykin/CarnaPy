@@ -58,9 +58,8 @@ jobs:
         with:
           name: dist
       -
-        name: Inspect directory structure
-        run:
-          tree .
+        name: Inspect artifact
+        run: tree .
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
