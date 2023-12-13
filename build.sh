@@ -3,7 +3,7 @@ set -e
 
 # Install dependencies:
 sudo apt-get install -y libegl1-mesa-dev libglu1-mesa-dev libglew-dev libboost-iostreams-dev
-conda install -y -c conda-forge pybind11
+conda install -y -c conda-forge pybind11 pyyaml
 
 # Setup and check dependencies:
 export PYBIND11_PREFIX="$CONDA_PREFIX/share/cmake/pybind11"
