@@ -5,6 +5,7 @@ MAINTAINER Leonid Kostrykin <leonid.kostrykin@bioquant.uni-heidelberg.de>
 
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir pybind11
+RUN pip install --no-cache-dir ipykernel
 RUN pip install --no-cache-dir jupyterlab
 
 COPY CarnaPy-*.whl /tmp/carnapy/
