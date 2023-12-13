@@ -14,4 +14,4 @@ RUN rm -rf /tmp/carnapy
 COPY examples/* .
 
 EXPOSE 8890
-CMD ['jupyter', 'lab', '--port', '8890']
+CMD jupyter lab --port 8890
