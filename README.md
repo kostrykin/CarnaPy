@@ -59,7 +59,7 @@ Conda packages are available for Python 3.7–3.9.
 
 Or you can use the Docker image which comes with Jupyter Lab:
 ```bash
-docker run --rm --gpus all -p 8890:8890 -t kostrykin/carnapy:<TAG>
+docker run --rm --gpus all -p 8890:8890 -t -i kostrykin/carnapy:<TAG>
 ```
 
 ---
