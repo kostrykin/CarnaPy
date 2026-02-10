@@ -12,7 +12,7 @@ See [libcarna.readthedocs.io](https://libcarna.readthedocs.io) for examples and 
 
 ---
 
-<a href="https://libcarna.readthedocs.io/en/latest/examples/cells.html"><img src="https://figshare.com/ndownloader/files/54620162" height="350px"></a>&nbsp;<a href="https://libcarna.readthedocs.io/en/latest/examples/cthead.html"><img src="https://figshare.com/ndownloader/files/54620159" height="350px"></a>
+<a href="https://libcarna.readthedocs.io/en/latest/examples/cells.html"><img src="https://github.com/user-attachments/assets/409aba3a-dfb8-4a62-b593-a4a01663fdd6" height="350" width="258"></a>&nbsp;<a href="https://libcarna.readthedocs.io/en/latest/examples/cthead.html"><img src="https://github.com/user-attachments/assets/cebce874-587e-44c6-a347-1119343fdd11" height="350" width="307"></a>
 
 ---
 ## Contents
